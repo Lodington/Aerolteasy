@@ -1,0 +1,22 @@
+{
+  "name": "ror2-devtool-ui",
+  "version": "1.0.0",
+  "description": "Svelte-based UI for Risk of Rain 2 Development Tool",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "daisyui": "^5.1.27",
+    "svelte": "^4.2.0",
+    "tailwindcss": "^4.1.14",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "lucide-svelte": "^0.294.0"
+  }
+}

@@ -1,0 +1,10 @@
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.csproj.AssemblyReference.cache
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.AssemblyInfoInputs.cache
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.AssemblyInfo.cs
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.csproj.CoreCompileInputs.cache
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\bin\Debug\netstandard2.1\RoR2DevTool.deps.json
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\bin\Debug\netstandard2.1\RoR2DevTool.dll
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\bin\Debug\netstandard2.1\RoR2DevTool.pdb
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.dll
+C:\Users\tyler\OneDrive\Documents\Aerolteasy\Mod\obj\Debug\netstandard2.1\RoR2DevTool.pdb

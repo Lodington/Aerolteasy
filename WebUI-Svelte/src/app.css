@@ -1,0 +1,57 @@
+/* Import Tailwind CSS and DaisyUI */
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Set dark theme for DaisyUI */
+html {
+  color-scheme: dark;
+}
+
+/* Force dark theme */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Set DaisyUI theme to dark */
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}

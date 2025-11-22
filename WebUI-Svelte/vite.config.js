@@ -6,10 +6,16 @@ export default defineConfig({
   plugins: [svelte(), tailwindcss()],
   server: {
     port: 5173,
-    host: true
+    host: true,
+    strictPort: true
   },
   build: {
     outDir: 'dist',
-    assetsDir: 'assets'
-  }
+    assetsDir: 'assets',
+    target: 'esnext',
+    minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
+    sourcemap: !!process.env.TAURI_DEBUG
+  },
+  clearScreen: false,
+  envPrefix: ['VITE_', 'TAURI_']
 })

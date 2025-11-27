@@ -23,6 +23,43 @@ body {
   min-height: 100vh;
 }
 
+/* Fix icon alignment globally */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Fix emoji alignment */
+.avatar span,
+.badge span,
+button span,
+a span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+/* Ensure flex containers properly center icons */
+.flex {
+  align-items: center;
+}
+
+/* Fix DaisyUI button icon alignment */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Fix menu item icon alignment */
+.menu li > * {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
   from {

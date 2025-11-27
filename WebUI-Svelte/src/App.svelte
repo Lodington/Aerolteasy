@@ -1,12 +1,14 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { gameState, isConnected, selectedPlayerId } from "./lib/stores.js";
+  import { gameState, isConnected, selectedPlayerId, networkStatus } from "./lib/stores.js";
   import { api } from "./lib/api.js";
+  import { networkApi } from "./lib/networkApi.js";
 
   import Navigation from "./components/Navigation.svelte";
   import GameStatePanel from "./components/GameStatePanel.svelte";
   import RunRequiredOverlay from "./components/RunRequiredOverlay.svelte";
   import Toast from "./components/Toast.svelte";
+  import NetworkStatusIndicator from "./components/NetworkStatusIndicator.svelte";
   
   // View components
   import PlayerView from "./components/views/PlayerView.svelte";
@@ -14,6 +16,7 @@
   import InteractableView from "./components/views/InteractableView.svelte";
   import TeleporterView from "./components/views/TeleporterView.svelte";
   import WorldView from "./components/views/WorldView.svelte";
+  import NetworkView from "./components/views/NetworkView.svelte";
   import SettingsView from "./components/views/SettingsView.svelte";
 
   let pollInterval;
@@ -54,6 +57,12 @@
           const state = await api.getGameState();
           if (state) {
             gameState.set(state);
+          }
+
+          // Poll network status
+          const netStatus = await networkApi.getNetworkStatus();
+          if (netStatus) {
+            networkStatus.set(netStatus);
           }
         }
       } catch (error) {
@@ -408,6 +417,8 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
               <TeleporterView />
             {:else if currentView === 'world'}
               <WorldView />
+            {:else if currentView === 'network'}
+              <NetworkView />
             {:else if currentView === 'settings'}
               <SettingsView />
             {/if}
@@ -443,6 +454,11 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
             </div>
           </div>
           
+          <!-- Network Status -->
+          <div class="p-4 border-b border-base-300">
+            <NetworkStatusIndicator />
+          </div>
+
           <!-- Game State Panel -->
           <div class="p-4">
             <GameStatePanel />

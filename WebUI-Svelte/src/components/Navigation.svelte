@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { User, Zap, Package, Settings, Cog, Eye, Menu } from 'lucide-svelte';
+  import { User, Zap, Package, Settings, Cog, Eye, Menu, Network } from 'lucide-svelte';
   
   export let activeView = 'players';
   
@@ -12,6 +12,7 @@
     { id: 'monsters', label: 'Monster Spawning', icon: Zap, color: 'text-warning' },
     { id: 'interactables', label: 'Interactables', icon: Package, color: 'text-accent' },
     { id: 'teleporter', label: 'Teleporter Controls', icon: Settings, color: 'text-info' },
+    { id: 'network', label: 'Network & Permissions', icon: Network, color: 'text-success' },
     { id: 'settings', label: 'Settings & Debug', icon: Cog, color: 'text-neutral' }
   ];
   

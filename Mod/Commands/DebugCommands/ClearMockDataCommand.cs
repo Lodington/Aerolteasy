@@ -12,12 +12,9 @@ namespace RoR2DevTool.Commands.DebugCommands
         {
             try
             {
-                logger.LogInfo("[RoR2DevTool] Clearing mock game state data...");
-
-                // Force a refresh of the actual game state
-                gameStateService.RefreshGameState();
-
-                logger.LogInfo("[RoR2DevTool] Mock data cleared, returned to actual game state");
+                logger.LogInfo("[RoR2DevTool] Mock data cleared");
+                logger.LogInfo("[RoR2DevTool] Note: GameStateService always reads live game state");
+                logger.LogInfo("[RoR2DevTool] This command is for UI testing purposes only");
             }
             catch (System.Exception ex)
             {

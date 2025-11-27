@@ -2805,20 +2805,20 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\tyler\\.nuget\\packages\\": {}
+    "/home/lodington/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\tyler\\OneDrive\\Documents\\Aerolteasy\\Mod\\RoR2DevTool.csproj",
+      "projectUniqueName": "/home/lodington/Documents/Aerolteasy/Mod/RoR2DevTool.csproj",
       "projectName": "RoR2DevTool",
-      "projectPath": "C:\\Users\\tyler\\OneDrive\\Documents\\Aerolteasy\\Mod\\RoR2DevTool.csproj",
-      "packagesPath": "C:\\Users\\tyler\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\tyler\\OneDrive\\Documents\\Aerolteasy\\Mod\\obj\\",
+      "projectPath": "/home/lodington/Documents/Aerolteasy/Mod/RoR2DevTool.csproj",
+      "packagesPath": "/home/lodington/.nuget/packages/",
+      "outputPath": "/home/lodington/Documents/Aerolteasy/Mod/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\tyler\\OneDrive\\Documents\\Aerolteasy\\Mod\\NuGet.Config",
-        "C:\\Users\\tyler\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/lodington/Documents/Aerolteasy/Mod/nuget.config",
+        "/home/lodington/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netstandard2.1"
@@ -2838,7 +2838,13 @@
         "warnAsError": [
           "NU1605"
         ]
-      }
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "netstandard2.1": {
@@ -2882,7 +2888,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Users\\tyler\\.dotnet\\sdk\\7.0.410\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.110/RuntimeIdentifierGraph.json"
       }
     }
   },

@@ -24,26 +24,28 @@ namespace RoR2DevTool.Commands.DebugCommands
                 {
                     IsInRun = true,
                     CurrentStage = "golemplains",
-                    StageDisplayName = "Titanic Plains",
+                    StageNumber = 1,
                     GameTime = 1234.56f,
                     DifficultyCoefficient = 2.75f,
                     TotalEnemiesAlive = 12,
                     TeamMoney = 1250,
                     Players = GenerateMockPlayers(),
-                    Teleporter = new TeleporterState
+                    Teleporter = new TeleporterData
                     {
                         IsActive = true,
                         IsCharged = false,
-                        ChargeProgress = 0.65f
+                        ChargeProgress = 0.65f,
+                        BossEventActive = false,
+                        EnemiesRemaining = 5
                     },
                     Interactables = GenerateMockInteractables(),
                     Monsters = GenerateMockMonsters()
                 };
 
-                // Update the game state service with mock data
-                gameStateService.UpdateGameState(mockGameState);
-
-                logger.LogInfo("[RoR2DevTool] Mock game state generated successfully!");
+                // Note: GameStateService always reads live game state
+                // This command is primarily for UI testing via the browser console
+                logger.LogInfo("[RoR2DevTool] Mock game state data generated (for reference)");
+                logger.LogInfo("[RoR2DevTool] Note: GameStateService reads live game state, not mock data");
                 logger.LogInfo($"[RoR2DevTool] - {mockGameState.Players.Count} mock players created");
                 logger.LogInfo($"[RoR2DevTool] - {mockGameState.Interactables.Count} mock interactables created");
                 logger.LogInfo($"[RoR2DevTool] - {mockGameState.Monsters.Count} mock monsters created");
@@ -54,9 +56,9 @@ namespace RoR2DevTool.Commands.DebugCommands
             }
         }
 
-        private List<PlayerState> GenerateMockPlayers()
+        private List<PlayerData> GenerateMockPlayers()
         {
-            var players = new List<PlayerState>();
+            var players = new List<PlayerData>();
             var characterBodies = new[] { "CommandoBody", "HuntressBody", "Bandit2Body", "ToolbotBody" };
             var playerNames = new[] { "TestPlayer1", "DevUser", "MockPlayer", "UITester" };
 
@@ -66,7 +68,7 @@ namespace RoR2DevTool.Commands.DebugCommands
                 var health = isAlive ? UnityEngine.Random.Range(50f, 100f) : 0f;
                 var maxHealth = 100f + (i * 25f);
 
-                players.Add(new PlayerState
+                players.Add(new PlayerData
                 {
                     PlayerId = i + 1,
                     PlayerName = playerNames[i],
@@ -76,8 +78,7 @@ namespace RoR2DevTool.Commands.DebugCommands
                     Experience = UnityEngine.Random.Range(0f, 1000f),
                     Health = health,
                     MaxHealth = maxHealth,
-                    Shield = isAlive ? UnityEngine.Random.Range(0f, 25f) : 0f,
-                    MaxShield = 25f,
+                    MaxShield = isAlive ? UnityEngine.Random.Range(0f, 25f) : 0f,
                     HealthRegen = UnityEngine.Random.Range(1f, 5f),
                     IsAlive = isAlive,
                     GodModeEnabled = i == 0, // Give first player god mode
@@ -125,9 +126,9 @@ namespace RoR2DevTool.Commands.DebugCommands
             return items;
         }
 
-        private List<InteractableState> GenerateMockInteractables()
+        private List<InteractableData> GenerateMockInteractables()
         {
-            var interactables = new List<InteractableState>();
+            var interactables = new List<InteractableData>();
             var interactableTypes = new[] 
             { 
                 "Chest1", "Chest2", "GoldChest", "EquipmentBarrel", 
@@ -136,25 +137,25 @@ namespace RoR2DevTool.Commands.DebugCommands
 
             for (int i = 0; i < UnityEngine.Random.Range(8, 15); i++)
             {
-                interactables.Add(new InteractableState
+                interactables.Add(new InteractableData
                 {
                     Name = interactableTypes[UnityEngine.Random.Range(0, interactableTypes.Length)],
-                    Position = new Vector3(
-                        UnityEngine.Random.Range(-50f, 50f),
-                        UnityEngine.Random.Range(0f, 20f),
-                        UnityEngine.Random.Range(-50f, 50f)
-                    ),
+                    PositionX = UnityEngine.Random.Range(-50f, 50f),
+                    PositionY = UnityEngine.Random.Range(0f, 20f),
+                    PositionZ = UnityEngine.Random.Range(-50f, 50f),
                     IsAvailable = UnityEngine.Random.Range(0f, 1f) > 0.3f,
-                    Cost = UnityEngine.Random.Range(25, 200)
+                    DisplayName = interactableTypes[UnityEngine.Random.Range(0, interactableTypes.Length)],
+                    Distance = UnityEngine.Random.Range(10f, 100f),
+                    NetworkId = i
                 });
             }
 
             return interactables;
         }
 
-        private List<MonsterState> GenerateMockMonsters()
+        private List<MonsterData> GenerateMockMonsters()
         {
-            var monsters = new List<MonsterState>();
+            var monsters = new List<MonsterData>();
             var monsterTypes = new[] 
             { 
                 "Beetle", "BeetleGuard", "Wisp", "Lemurian", "Golem",
@@ -166,18 +167,19 @@ namespace RoR2DevTool.Commands.DebugCommands
                 var maxHealth = UnityEngine.Random.Range(100f, 500f);
                 var health = UnityEngine.Random.Range(maxHealth * 0.2f, maxHealth);
 
-                monsters.Add(new MonsterState
+                monsters.Add(new MonsterData
                 {
                     Name = monsterTypes[UnityEngine.Random.Range(0, monsterTypes.Length)],
-                    Position = new Vector3(
-                        UnityEngine.Random.Range(-100f, 100f),
-                        UnityEngine.Random.Range(0f, 30f),
-                        UnityEngine.Random.Range(-100f, 100f)
-                    ),
+                    PositionX = UnityEngine.Random.Range(-100f, 100f),
+                    PositionY = UnityEngine.Random.Range(0f, 30f),
+                    PositionZ = UnityEngine.Random.Range(-100f, 100f),
                     Health = health,
                     MaxHealth = maxHealth,
                     IsElite = UnityEngine.Random.Range(0f, 1f) < 0.2f,
-                    IsBoss = UnityEngine.Random.Range(0f, 1f) < 0.1f
+                    DisplayName = monsterTypes[UnityEngine.Random.Range(0, monsterTypes.Length)],
+                    IsAlive = true,
+                    Distance = UnityEngine.Random.Range(20f, 150f),
+                    NetworkId = i
                 });
             }
 

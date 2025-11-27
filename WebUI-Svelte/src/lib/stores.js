@@ -26,6 +26,25 @@ export const selectedPlayer = derived(
 // Connection status
 export const isConnected = writable(false);
 
+// Network status store
+export const networkStatus = writable({
+  isHost: false,
+  isClient: false,
+  isConnected: false,
+  currentUserId: null,
+  currentUserName: null,
+  currentPermission: 'None',
+  isCurrentUserHost: false,
+  connectedPlayers: 0,
+  players: []
+});
+
+// Current user permission level
+export const userPermission = derived(
+  networkStatus,
+  $networkStatus => $networkStatus.currentPermission
+);
+
 
 
 // Derived stores for computed values

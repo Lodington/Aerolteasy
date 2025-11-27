@@ -27,11 +27,18 @@ export class RoR2API {
         body: JSON.stringify(command)
       });
 
+      const result = await response.json();
+
+      if (response.status === 403) {
+        // Permission denied
+        throw new Error(`Insufficient permissions: ${result.message || 'Permission denied'}`);
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      return result;
     } catch (error) {
       console.error('Error sending command:', error);
       throw error;

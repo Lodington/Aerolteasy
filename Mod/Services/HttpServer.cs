@@ -1,12 +1,10 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using BepInEx.Logging;
-using Newtonsoft.Json;
-using RoR2DevTool.Core;
-using RoR2DevTool.Models;
+using RoR2DevTool.Services.Endpoints;
 
 namespace RoR2DevTool.Services
 {
@@ -17,14 +15,24 @@ namespace RoR2DevTool.Services
         private bool isRunning = false;
         private int serverPort = 8080;
         private ManualLogSource logger;
-        private GameStateService gameStateService;
-        private CommandProcessor commandProcessor;
+        private Dictionary<string, IApiEndpoint> endpoints;
 
-        public HttpServer(ManualLogSource logger, GameStateService gameStateService, CommandProcessor commandProcessor)
+        public HttpServer(ManualLogSource logger, GameStateService gameStateService, NetworkingService networkingService, PermissionService permissionService)
         {
             this.logger = logger;
-            this.gameStateService = gameStateService;
-            this.commandProcessor = commandProcessor;
+            
+            // Register all endpoints
+            endpoints = new Dictionary<string, IApiEndpoint>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "/api/gamestate", new GameStateEndpoint(gameStateService, logger) },
+                { "/api/command", new CommandEndpoint(networkingService, permissionService, logger) },
+                { "/api/status", new StatusEndpoint(logger) },
+                { "/api/itemcatalog", new ItemCatalogEndpoint(gameStateService, logger) },
+                { "/api/characterdefaults", new CharacterDefaultsEndpoint(gameStateService, logger) },
+                { "/api/network/status", new NetworkStatusEndpoint(permissionService, logger) },
+                { "/api/permissions", new PermissionsEndpoint(permissionService, logger) },
+                { "/api/permissions/request", new RequestPermissionEndpoint(networkingService, logger) }
+            };
         }
 
         public void Start()
@@ -86,7 +94,7 @@ namespace RoR2DevTool.Services
             {
                 // Enable CORS
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
-                response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
                 response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
 
                 if (request.HttpMethod == "OPTIONS")
@@ -96,91 +104,16 @@ namespace RoR2DevTool.Services
                     return;
                 }
 
-                string responseText = "";
+                string path = request.Url.AbsolutePath.ToLower();
                 
-                switch (request.Url.AbsolutePath.ToLower())
+                if (endpoints.TryGetValue(path, out var endpoint))
                 {
-                    case "/api/gamestate":
-                        if (request.HttpMethod == "GET")
-                        {
-                            responseText = JsonConvert.SerializeObject(gameStateService.GetGameState(), Formatting.Indented);
-                            response.ContentType = "application/json";
-                        }
-                        break;
-
-                    case "/api/command":
-                        if (request.HttpMethod == "POST")
-                        {
-                            using (var reader = new StreamReader(request.InputStream))
-                            {
-                                string json = reader.ReadToEnd();
-                                var command = JsonConvert.DeserializeObject<DevCommand>(json);
-                                
-                                commandProcessor.EnqueueCommand(command);
-                                
-                                responseText = JsonConvert.SerializeObject(new { success = true });
-                                response.ContentType = "application/json";
-                            }
-                        }
-                        break;
-
-                    case "/api/status":
-                        try
-                        {
-                            responseText = JsonConvert.SerializeObject(new 
-                            { 
-                                connected = true, 
-                                gameRunning = RoR2.Run.instance != null,
-                                playerAlive = RoR2.LocalUserManager.GetFirstLocalUser()?.cachedBody != null,
-                                timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                            });
-                            response.ContentType = "application/json";
-                        }
-                        catch (Exception statusEx)
-                        {
-                            logger.LogWarning($"Error getting status: {statusEx.Message}");
-                            responseText = JsonConvert.SerializeObject(new { connected = true, error = "Status unavailable" });
-                            response.ContentType = "application/json";
-                        }
-                        break;
-
-                    case "/api/itemcatalog":
-                        if (request.HttpMethod == "GET")
-                        {
-                            var catalog = gameStateService.GetItemCatalog();
-                            responseText = JsonConvert.SerializeObject(new 
-                            { 
-                                success = true,
-                                items = catalog,
-                                count = catalog.Count
-                            }, Formatting.Indented);
-                            response.ContentType = "application/json";
-                        }
-                        break;
-
-                    case "/api/characterdefaults":
-                        if (request.HttpMethod == "GET")
-                        {
-                            var defaults = gameStateService.GetCharacterDefaults();
-                            responseText = JsonConvert.SerializeObject(new 
-                            { 
-                                success = true,
-                                characters = defaults,
-                                count = defaults.Count
-                            }, Formatting.Indented);
-                            response.ContentType = "application/json";
-                        }
-                        break;
-
-                    default:
-                        response.StatusCode = 404;
-                        responseText = "Not Found";
-                        break;
+                    endpoint.HandleRequest(request, response);
                 }
-
-                byte[] buffer = Encoding.UTF8.GetBytes(responseText);
-                response.ContentLength64 = buffer.Length;
-                response.OutputStream.Write(buffer, 0, buffer.Length);
+                else
+                {
+                    response.StatusCode = 404;
+                }
             }
             catch (Exception ex)
             {

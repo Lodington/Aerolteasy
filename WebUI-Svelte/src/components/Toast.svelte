@@ -47,7 +47,10 @@
   border-radius: var(--pico-border-radius);
   backdrop-filter: blur(10px);
   max-width: 400px;
+  min-width: 250px;
+  width: fit-content;
   border: 1px solid;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .toast[data-type="info"] {
@@ -77,14 +80,16 @@
 .toast-message {
   font-size: 0.875rem;
   font-weight: 500;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {
   .toast {
     top: 10px;
     right: 10px;
-    left: 10px;
-    max-width: none;
+    left: auto;
+    max-width: calc(100vw - 20px);
+    min-width: 200px;
   }
 }
 </style>

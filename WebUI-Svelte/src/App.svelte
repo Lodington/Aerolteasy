@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { gameState, isConnected, selectedPlayerId, networkStatus } from "./lib/stores.js";
+  import { gameState, isConnected, selectedPlayerId, networkStatus, toast, showToast } from "./lib/stores.js";
   import { api } from "./lib/api.js";
   import { networkApi } from "./lib/networkApi.js";
 
@@ -24,11 +24,6 @@
   let previousRunState = false;
   let justEndedRun = false;
   let mockModeActive = false;
-  
-  // Toast notification state
-  let showToast = false;
-  let toastMessage = '';
-  let toastType = 'info';
 
   onMount(() => {
     startPolling();
@@ -104,9 +99,7 @@
     // If we just entered a run, ensure we have a selected player
     if (!previousRunState && currentRunState && $gameState.Players?.length > 0) {
       // Show welcome toast
-      toastMessage = 'Run started - Dev tools are now available!';
-      toastType = 'success';
-      showToast = true;
+      showToast('Run started - Dev tools are now available!', 'success');
       
       // Auto-select first player if none selected
       if (!$selectedPlayerId) {
@@ -121,9 +114,7 @@
     console.log('Run ended - resetting UI state');
     
     // Show toast notification
-    toastMessage = 'Run ended - Interface has been reset';
-    toastType = 'warning';
-    showToast = true;
+    showToast('Run ended - Interface has been reset', 'warning');
     
     // Reset selected player
     selectedPlayerId.set(null);
@@ -183,9 +174,7 @@
       console.log('⏸️ Polling disabled to preserve mock data');
       
       // Show toast
-      toastMessage = 'Mock data generated - UI ready for testing!';
-      toastType = 'success';
-      showToast = true;
+      showToast('Mock data generated - UI ready for testing!', 'success');
     };
 
     // Clear mock data function
@@ -215,9 +204,7 @@
       console.log('▶️ Polling re-enabled for real game state');
       
       // Show toast
-      toastMessage = 'Mock data cleared - Polling resumed';
-      toastType = 'info';
-      showToast = true;
+      showToast('Mock data cleared - Polling resumed', 'info');
     };
 
     // Force restart polling (useful for debugging)
@@ -470,7 +457,7 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
 </div>
 
 <!-- Toast notifications -->
-<Toast bind:show={showToast} message={toastMessage} type={toastType} />
+<Toast bind:show={$toast.show} message={$toast.message} type={$toast.type} duration={$toast.duration || 3000} />
 
 <style>
 /* Custom animations for DaisyUI */

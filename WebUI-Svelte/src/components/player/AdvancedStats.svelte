@@ -38,79 +38,65 @@
 <div class="card bg-base-100 shadow-lg mb-6">
   <div class="card-body">
     <h3 class="card-title text-lg mb-4">⚔️ Combat Stats</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Base Damage</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Base Damage</span>
         </label>
-        <div class="flex flex-wrap gap-2 mb-3">
-          {#if $selectedPlayer?.BaseDamage}
-            <div class="badge stat-badge-current badge-sm">Current: {$selectedPlayer.BaseDamage.toFixed(1)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseDamage}
-            <div class="badge stat-badge-default badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseDamage.toFixed(1)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1 stat-input"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.baseDamage}
-            placeholder="New damage" 
+            placeholder={$selectedPlayer?.BaseDamage?.toFixed(1) || "13.4"} 
             min="0"
             step="0.1"
           />
-          <button class="btn btn-primary join-item stat-button" on:click={() => setPlayerStat('damage', 'baseDamage')}>
+          <button class="btn btn-primary join-item" on:click={() => setPlayerStat('damage', 'baseDamage')}>
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.BaseDamage?.toFixed(1) || "N/A"}
+          </span>
+        </label>
       </div>
 
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Armor</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Armor</span>
         </label>
-        <div class="flex flex-wrap gap-2 mb-3">
-          {#if $selectedPlayer?.Armor}
-            <div class="badge stat-badge-current badge-sm">Current: {$selectedPlayer.Armor.toFixed(1)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseArmor}
-            <div class="badge stat-badge-default badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseArmor.toFixed(1)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1 stat-input"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.armor}
-            placeholder="New armor" 
+            placeholder={$selectedPlayer?.Armor?.toFixed(1) || "11.0"} 
             min="0"
             step="0.1"
           />
-          <button class="btn btn-primary join-item stat-button" on:click={() => setPlayerStat('armor', 'armor')}>
+          <button class="btn btn-primary join-item" on:click={() => setPlayerStat('armor', 'armor')}>
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.Armor?.toFixed(1) || "N/A"}
+          </span>
+        </label>
       </div>
 
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Attack Speed</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Attack Speed</span>
         </label>
-        <div class="flex flex-wrap gap-1 mb-2">
-          {#if $selectedPlayer?.AttackSpeed}
-            <div class="badge stat-badge-current badge-sm">Current: {$selectedPlayer.AttackSpeed.toFixed(2)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseAttackSpeed}
-            <div class="badge stat-badge-default badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseAttackSpeed.toFixed(2)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.attackSpeed}
-            placeholder="New attack speed" 
+            placeholder={$selectedPlayer?.AttackSpeed?.toFixed(2) || "2.01"} 
             min="0"
             step="0.1"
           />
@@ -118,26 +104,23 @@
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.AttackSpeed?.toFixed(2) || "N/A"}
+          </span>
+        </label>
       </div>
 
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Crit Chance %</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Crit Chance %</span>
         </label>
-        <div class="flex flex-wrap gap-1 mb-2">
-          {#if $selectedPlayer?.CritChance}
-            <div class="badge badge-success badge-sm">Current: {$selectedPlayer.CritChance.toFixed(1)}%</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseCrit}
-            <div class="badge badge-info badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseCrit.toFixed(1)}%</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.critChance}
-            placeholder="New crit %" 
+            placeholder={$selectedPlayer?.CritChance?.toFixed(1) || "19.9"} 
             min="0"
             max="100"
             step="0.1"
@@ -146,6 +129,11 @@
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.CritChance?.toFixed(1) || "N/A"}%
+          </span>
+        </label>
       </div>
     </div>
   </div>
@@ -155,25 +143,17 @@
 <div class="card bg-base-100 shadow-lg">
   <div class="card-body">
     <h3 class="card-title text-lg mb-4">🏃 Movement & Health</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Move Speed</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Move Speed</span>
         </label>
-        <div class="flex flex-wrap gap-1 mb-2">
-          {#if $selectedPlayer?.MoveSpeed}
-            <div class="badge badge-success badge-sm">Current: {$selectedPlayer.MoveSpeed.toFixed(1)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseMoveSpeed}
-            <div class="badge badge-info badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseMoveSpeed.toFixed(1)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.moveSpeed}
-            placeholder="New move speed" 
+            placeholder={$selectedPlayer?.MoveSpeed?.toFixed(1) || "7.0"} 
             min="0"
             step="0.1"
           />
@@ -181,26 +161,23 @@
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.MoveSpeed?.toFixed(1) || "N/A"}
+          </span>
+        </label>
       </div>
 
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Jump Power</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Jump Power</span>
         </label>
-        <div class="flex flex-wrap gap-1 mb-2">
-          {#if $selectedPlayer?.JumpPower}
-            <div class="badge badge-success badge-sm">Current: {$selectedPlayer.JumpPower.toFixed(1)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseJumpPower}
-            <div class="badge badge-info badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseJumpPower.toFixed(1)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.jumpPower}
-            placeholder="New jump power" 
+            placeholder={$selectedPlayer?.JumpPower?.toFixed(1) || "15.0"} 
             min="0"
             step="0.1"
           />
@@ -208,26 +185,23 @@
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.JumpPower?.toFixed(1) || "N/A"}
+          </span>
+        </label>
       </div>
 
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Max Health</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Max Health</span>
         </label>
-        <div class="flex flex-wrap gap-1 mb-2">
-          {#if $selectedPlayer?.MaxHealth}
-            <div class="badge badge-success badge-sm">Current: {$selectedPlayer.MaxHealth.toFixed(0)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseMaxHealth}
-            <div class="badge badge-info badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseMaxHealth.toFixed(0)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.maxHealth}
-            placeholder="New max health" 
+            placeholder={$selectedPlayer?.MaxHealth?.toFixed(0) || "110"} 
             min="1"
             step="1"
           />
@@ -235,26 +209,23 @@
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.MaxHealth?.toFixed(0) || "N/A"}
+          </span>
+        </label>
       </div>
 
       <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Health Regen</span>
+        <label class="label pb-1">
+          <span class="label-text font-semibold">Health Regen</span>
         </label>
-        <div class="flex flex-wrap gap-1 mb-2">
-          {#if $selectedPlayer?.HealthRegen}
-            <div class="badge badge-success badge-sm">Current: {$selectedPlayer.HealthRegen.toFixed(2)}</div>
-          {/if}
-          {#if getCharacterDefaults(selectedCharacter)?.BaseRegen}
-            <div class="badge badge-info badge-sm">Default: {getCharacterDefaults(selectedCharacter).BaseRegen.toFixed(2)}</div>
-          {/if}
-        </div>
-        <div class="join">
+        <div class="join w-full">
           <input 
             type="number" 
-            class="input input-bordered join-item flex-1"
+            class="input input-bordered join-item flex-1 min-w-0"
             bind:value={statInputs.healthRegen}
-            placeholder="New health regen" 
+            placeholder={$selectedPlayer?.HealthRegen?.toFixed(2) || "1.00"} 
             min="0"
             step="0.1"
           />
@@ -262,40 +233,13 @@
             Set
           </button>
         </div>
+        <label class="label pt-1">
+          <span class="label-text-alt opacity-70">
+            Current: {$selectedPlayer?.HealthRegen?.toFixed(2) || "N/A"}
+          </span>
+        </label>
       </div>
     </div>
   </div>
 </div>
 
-<style>
-  /* Enhanced styling for advanced stats */
-  .stat-badge-current {
-    background: linear-gradient(135deg, hsl(var(--su)), hsl(var(--su) / 0.8));
-    color: hsl(var(--suc));
-    border: none;
-  }
-
-  .stat-badge-default {
-    background: linear-gradient(135deg, hsl(var(--in)), hsl(var(--in) / 0.8));
-    color: hsl(var(--inc));
-    border: none;
-  }
-
-  .stat-input {
-    transition: all 0.3s ease;
-  }
-
-  .stat-input:focus {
-    transform: scale(1.02);
-    box-shadow: 0 0 0 3px hsl(var(--p) / 0.2);
-  }
-
-  .stat-button {
-    transition: all 0.2s ease;
-  }
-
-  .stat-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px hsl(var(--p) / 0.3);
-  }
-</style>

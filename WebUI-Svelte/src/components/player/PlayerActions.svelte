@@ -60,14 +60,13 @@
     }
   }
 
-  async function giveMoney(amount = 100, targetAll = false) {
+  async function giveMoney(amount, targetAll = false) {
     try {
-      if (targetAll) {
-        await api.setMoney(amount); // Team money
-      } else {
-        // For individual players, we'll add items that give money or use team money
-        await api.setMoney(amount);
-      }
+      const playerId = targetAll ? -1 : $selectedPlayer.PlayerId;
+      await api.sendCommand({
+        Type: 'setmoney',
+        Data: { amount, playerId }
+      });
       setTimeout(refreshGameState, 50);
     } catch (error) {
       console.error('Failed to give money:', error);
@@ -77,6 +76,11 @@
   // Execute action based on target mode
   function executeAction(actionFn) {
     actionFn(actionTarget === 'all');
+  }
+
+  // Execute money action with specific amount
+  function executeMoneyAction(amount) {
+    giveMoney(amount, actionTarget === 'all');
   }
 </script>
 
@@ -149,12 +153,12 @@
             Level Up (+1)
           </button>
 
-          <button class="btn btn-warning w-full" on:click={() => executeAction(() => giveMoney(100, actionTarget === 'all'))}>
+          <button class="btn btn-warning w-full" on:click={() => executeMoneyAction(100)}>
             <Coins size={16} />
             +100 Money
           </button>
 
-          <button class="btn btn-warning w-full" on:click={() => executeAction(() => giveMoney(500, actionTarget === 'all'))}>
+          <button class="btn btn-warning w-full" on:click={() => executeMoneyAction(500)}>
             <Coins size={16} />
             +500 Money
           </button>

@@ -126,6 +126,30 @@
       console.error('Failed to clear mock data:', error);
     }
   }
+
+  // Toast notification imports and functions
+  import { showToast } from '../lib/stores.js';
+  import { Bell, CheckCircle, AlertTriangle, XCircle, Info } from 'lucide-svelte';
+
+  function testInfoToast() {
+    showToast('This is an info notification! It provides general information.', 'info');
+  }
+
+  function testSuccessToast() {
+    showToast('Success! Your action completed successfully.', 'success');
+  }
+
+  function testWarningToast() {
+    showToast('Warning! Please review this important message.', 'warning');
+  }
+
+  function testErrorToast() {
+    showToast('Error! Something went wrong with your request.', 'error');
+  }
+
+  function testLongToast() {
+    showToast('This is a longer notification message to test how the toast handles multiple lines of text and word wrapping. It should display nicely!', 'info', 5000);
+  }
 </script>
 
 <div class="space-y-6">
@@ -151,14 +175,51 @@
     </div>
   </div>
 
-  <!-- Mock Data Controls -->
+  <!-- Mock Data Controls & Toast Testing -->
   <div class="card bg-base-100 shadow-md">
     <div class="card-body">
       <h3 class="card-title text-lg">🧪 UI Testing</h3>
-      <p class="text-sm opacity-70 mb-4">Generate mock data to test the UI without being in a game</p>
-      <div class="flex gap-2">
-        <Button variant="success" on:click={generateMockData}>Generate Mock Data</Button>
-        <Button variant="warning" on:click={clearMockData}>Clear Mock Data</Button>
+      
+      <!-- Mock Data Section -->
+      <div class="mb-6">
+        <h4 class="font-semibold mb-2">Mock Data</h4>
+        <p class="text-sm opacity-70 mb-3">Generate mock data to test the UI without being in a game</p>
+        <div class="flex gap-2">
+          <Button variant="success" on:click={generateMockData}>Generate Mock Data</Button>
+          <Button variant="warning" on:click={clearMockData}>Clear Mock Data</Button>
+        </div>
+      </div>
+
+      <!-- Toast Notifications Section -->
+      <div>
+        <h4 class="font-semibold mb-2">🔔 Toast Notifications</h4>
+        <p class="text-sm opacity-70 mb-3">Test the toast notification system with different types</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          <button class="btn btn-info btn-sm" on:click={testInfoToast}>
+            <Info size={14} />
+            Info
+          </button>
+          
+          <button class="btn btn-success btn-sm" on:click={testSuccessToast}>
+            <CheckCircle size={14} />
+            Success
+          </button>
+          
+          <button class="btn btn-warning btn-sm" on:click={testWarningToast}>
+            <AlertTriangle size={14} />
+            Warning
+          </button>
+          
+          <button class="btn btn-error btn-sm" on:click={testErrorToast}>
+            <XCircle size={14} />
+            Error
+          </button>
+          
+          <button class="btn btn-outline btn-sm" on:click={testLongToast}>
+            <Bell size={14} />
+            Long
+          </button>
+        </div>
       </div>
     </div>
   </div>

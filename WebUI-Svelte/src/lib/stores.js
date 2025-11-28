@@ -45,6 +45,18 @@ export const userPermission = derived(
   $networkStatus => $networkStatus.currentPermission
 );
 
+// Toast notification store
+export const toast = writable({
+  show: false,
+  message: '',
+  type: 'info'
+});
+
+// Helper function to show toast
+export function showToast(message, type = 'info', duration = 3000) {
+  toast.set({ show: true, message, type, duration });
+}
+
 
 
 // Derived stores for computed values

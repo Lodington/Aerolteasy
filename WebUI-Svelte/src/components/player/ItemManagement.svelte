@@ -90,16 +90,16 @@
     <div class="card-body">
       <h3 class="card-title text-lg mb-4">🔍 Item Search & Management</h3>
       <div class="form-control">
-        <div class="input-group">
-          <span class="bg-base-200 px-4">🔍</span>
+        <div class="join w-full">
+          <span class="btn btn-square join-item pointer-events-none">🔍</span>
           <input 
             type="text" 
             bind:value={itemFilter}
             placeholder="Search for items to add..."
-            class="input input-bordered flex-1 input-lg"
+            class="input input-bordered join-item flex-1"
           />
           {#if itemFilter}
-            <button class="btn btn-square btn-outline btn-lg" on:click={() => itemFilter = ''} title="Clear search">
+            <button class="btn btn-square join-item" on:click={() => itemFilter = ''} title="Clear search">
               ×
             </button>
           {/if}

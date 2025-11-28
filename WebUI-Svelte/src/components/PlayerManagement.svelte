@@ -495,182 +495,33 @@
 
         <!-- Tab Content Area -->
         <div class="min-h-[400px]">
-          <div class="alert alert-info mb-4">
-            <div>
-              <h4 class="font-bold">Tab System Test</h4>
-              <p>Active Tab: <strong>{activeTab}</strong></p>
-              <p>
-                Selected Player: <strong
-                  >{$selectedPlayer?.PlayerName || "None"}</strong
-                >
-              </p>
-              <p>This should always be visible when you click tabs</p>
-            </div>
-          </div>
-
           {#if activeTab === "overview"}
-            <div class="card bg-success text-success-content">
-              <div class="card-body">
-                <h2 class="card-title">✅ Stats & Controls Tab Active</h2>
-                <p>This is the Stats & Controls content area.</p>
-                <p>
-                  Player: {$selectedPlayer?.PlayerName || "No player selected"}
-                </p>
+            <!-- Stats & Controls Content -->
+            <div class="space-y-6">
+              <!-- Character Selection -->
+              <CharacterInfo 
+                bind:selectedCharacter 
+                {characterDefaults}
+                on:characterChange={handleCharacterChange}
+              />
 
-                <!-- Simple test controls -->
-                <div class="card bg-base-100 text-base-content mt-4">
-                  <div class="card-body">
-                    <h3 class="card-title">🎮 Test Controls</h3>
-                    <div class="form-control">
-                      <label class="label">
-                        <span class="label-text">Test Input</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Type something..."
-                        class="input input-bordered"
-                      />
-                    </div>
-                    <button class="btn btn-primary mt-2">Test Button</button>
-                  </div>
-                </div>
-              </div>
+              <!-- Basic Controls -->
+              <BasicControls 
+                bind:statInputs
+                {targetMode}
+                {refreshGameState}
+              />
+
+              <!-- Advanced Stats -->
+              <AdvancedStats 
+                bind:statInputs
+                {targetMode}
+                {refreshGameState}
+              />
             </div>
           {:else if activeTab === "items"}
-            <!-- Item Management Interface -->
-            <div class="space-y-6">
-              <!-- Item Search Section -->
-              <div
-                class="card bg-gradient-to-r from-primary/10 to-secondary/10 shadow-lg"
-              >
-                <div class="card-body">
-                  <h3 class="card-title text-lg mb-4">🔍 Item Search & Add</h3>
-                  <div class="form-control">
-                    <div class="input-group">
-                      <span class="bg-base-200 px-4">🔍</span>
-                      <input
-                        type="text"
-                        bind:value={itemFilter}
-                        placeholder="Search for items to add (e.g., 'syringe', 'crowbar', 'bear')..."
-                        class="input input-bordered flex-1 input-lg"
-                      />
-                      {#if itemFilter}
-                        <button
-                          class="btn btn-square btn-outline btn-lg"
-                          on:click={() => (itemFilter = "")}
-                          title="Clear search"
-                        >
-                          ×
-                        </button>
-                      {/if}
-                    </div>
-                    <label class="label">
-                      <span class="label-text-alt"
-                        >💡 Tip: Start typing to see item suggestions appear
-                        below</span
-                      >
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Item Suggestions -->
-              {#if itemFilter && suggestedItems.length > 0}
-                <div
-                  class="card bg-success/10 border border-success/20 shadow-lg"
-                >
-                  <div class="card-body">
-                    <h4 class="card-title text-success">
-                      💡 Suggested Items ({suggestedItems.length})
-                    </h4>
-                    <p class="text-sm opacity-70 mb-4">
-                      Items matching "{itemFilter}" that you can add
-                    </p>
-
-                    <div
-                      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
-                    >
-                      {#each suggestedItems as item}
-                        <div
-                          class="card bg-base-100 shadow-md hover:shadow-lg transition-all"
-                        >
-                          <div class="card-body p-4">
-                            <div class="flex justify-between items-start mb-3">
-                              <div class="flex-1">
-                                <h5 class="font-semibold text-sm">
-                                  {item.label}
-                                </h5>
-                                <p class="text-xs opacity-60">
-                                  {availableItems.find((cat) =>
-                                    cat.items.includes(item),
-                                  )?.category || "Item"}
-                                </p>
-                              </div>
-                            </div>
-                            <div class="flex gap-2">
-                              <button
-                                class="btn btn-success btn-sm flex-1"
-                                on:click={() => addSuggestedItem(item.value, 1)}
-                              >
-                                +1
-                              </button>
-                              <button
-                                class="btn btn-success btn-sm flex-1"
-                                on:click={() => addSuggestedItem(item.value, 5)}
-                              >
-                                +5
-                              </button>
-                              <button
-                                class="btn btn-success btn-sm flex-1"
-                                on:click={() =>
-                                  addSuggestedItem(item.value, 10)}
-                              >
-                                +10
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      {/each}
-                    </div>
-                  </div>
-                </div>
-              {/if}
-
-              <!-- Current Items Display -->
-              <div class="card bg-base-100 shadow-lg">
-                <div class="card-body">
-                  <h4 class="card-title">📦 Current Items</h4>
-                  <p class="text-sm opacity-70 mb-4">
-                    Player: {$selectedPlayer?.PlayerName ||
-                      "No player selected"}
-                  </p>
-
-                  {#if $selectedPlayer?.Items && Object.keys($selectedPlayer.Items).length > 0}
-                    <div class="alert alert-info">
-                      <div>
-                        <h5 class="font-bold">Items Available</h5>
-                        <p>
-                          This player has {Object.keys(
-                            $selectedPlayer.Items,
-                          ).filter((key) => $selectedPlayer.Items[key] > 0)
-                            .length} different items
-                        </p>
-                      </div>
-                    </div>
-                  {:else}
-                    <div class="alert alert-warning">
-                      <div>
-                        <h5 class="font-bold">No Items</h5>
-                        <p>
-                          This player doesn't have any items yet. Use the search
-                          above to add items!
-                        </p>
-                      </div>
-                    </div>
-                  {/if}
-                </div>
-              </div>
-            </div>
+            <!-- Use the ItemManagement component -->
+            <ItemManagement {refreshGameState} />
           {:else}
             <div class="card bg-error text-error-content">
               <div class="card-body">

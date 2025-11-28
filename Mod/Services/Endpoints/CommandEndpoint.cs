@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using BepInEx.Logging;
 using Newtonsoft.Json;
 using RoR2;
 using RoR2DevTool.Core;
+using RoR2DevTool.Models;
 
 namespace RoR2DevTool.Services.Endpoints
 {
@@ -26,51 +29,204 @@ namespace RoR2DevTool.Services.Endpoints
 
         public void HandleRequest(HttpListenerRequest request, HttpListenerResponse response)
         {
-            if (request.HttpMethod != "POST")
+            try
             {
-                response.StatusCode = 405;
-                return;
-            }
-
-            using (var reader = new StreamReader(request.InputStream))
-            {
-                string json = reader.ReadToEnd();
-                var command = JsonConvert.DeserializeObject<DevCommand>(json);
-                
-                // Get current user info
-                var localUser = LocalUserManager.GetFirstLocalUser();
-                string userId = localUser?.currentNetworkUser?.id.value.ToString() ?? "local";
-                string userName = localUser?.currentNetworkUser?.userName ?? "LocalUser";
-
-                // Check permissions
-                if (!permissionService.HasPermission(userId, command.Type))
+                if (request.HttpMethod == "GET")
                 {
-                    response.StatusCode = 403;
-                    var errorObj = new 
-                    { 
-                        success = false, 
-                        message = $"Insufficient permissions for command: {command.Type}",
-                        requiredPermission = "Higher level required"
-                    };
-                    var errorJson = JsonConvert.SerializeObject(errorObj);
-                    response.ContentType = "application/json";
-                    var buffer = Encoding.UTF8.GetBytes(errorJson);
-                    response.ContentLength64 = buffer.Length;
-                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                    HandleGetCommands(response);
                     return;
                 }
 
-                // Send command through networking service
+                if (request.HttpMethod != "POST")
+                {
+                    SendErrorResponse(response, 405, "Method not allowed. Use POST to execute commands or GET to list available commands.");
+                    return;
+                }
+
+                HandlePostCommand(request, response);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error handling command request: {ex.Message}");
+                SendErrorResponse(response, 500, "Internal server error", ex.Message);
+            }
+        }
+
+        private void HandleGetCommands(HttpListenerResponse response)
+        {
+            var commands = GetAvailableCommands();
+            var responseObj = new
+            {
+                success = true,
+                commands = commands,
+                count = commands.Count
+            };
+
+            SendJsonResponse(response, responseObj, 200);
+        }
+
+        private void HandlePostCommand(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            string json;
+            using (var reader = new StreamReader(request.InputStream))
+            {
+                json = reader.ReadToEnd();
+            }
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                SendErrorResponse(response, 400, "Request body is empty");
+                return;
+            }
+
+            DevCommand command;
+            try
+            {
+                command = JsonConvert.DeserializeObject<DevCommand>(json);
+            }
+            catch (JsonException ex)
+            {
+                SendErrorResponse(response, 400, "Invalid JSON format", ex.Message);
+                return;
+            }
+
+            // Validate command
+            if (command == null || string.IsNullOrWhiteSpace(command.Type))
+            {
+                SendErrorResponse(response, 400, "Command type is required");
+                return;
+            }
+
+            // Get current user info
+            var localUser = LocalUserManager.GetFirstLocalUser();
+            string userId = localUser?.currentNetworkUser?.id.value.ToString() ?? "local";
+            string userName = localUser?.currentNetworkUser?.userName ?? "LocalUser";
+
+            // Check if command exists
+            var availableCommands = GetAvailableCommands();
+            var commandInfo = availableCommands.FirstOrDefault(c => 
+                c.name.Equals(command.Type, StringComparison.OrdinalIgnoreCase));
+
+            if (commandInfo == null)
+            {
+                SendErrorResponse(response, 404, $"Unknown command: {command.Type}", 
+                    $"Available commands: {string.Join(", ", availableCommands.Select(c => c.name))}");
+                return;
+            }
+
+            // Check permissions
+            var userPermission = permissionService.GetUserPermission(userId);
+            var requiredPermission = permissionService.GetRequiredPermission(command.Type);
+            
+            if (!permissionService.HasPermission(userId, command.Type))
+            {
+                SendErrorResponse(response, 403, 
+                    $"Insufficient permissions for command: {command.Type}",
+                    $"Your permission: {userPermission}, Required: {requiredPermission}");
+                return;
+            }
+
+            // Send command through networking service
+            try
+            {
                 networkingService.SendCommand(command, userId, userName);
                 
-                var responseObj = new { success = true, message = "Command sent" };
-                var responseJson = JsonConvert.SerializeObject(responseObj);
-                
-                response.ContentType = "application/json";
-                var responseBuffer = Encoding.UTF8.GetBytes(responseJson);
-                response.ContentLength64 = responseBuffer.Length;
-                response.OutputStream.Write(responseBuffer, 0, responseBuffer.Length);
+                var responseObj = new
+                {
+                    success = true,
+                    message = "Command executed successfully",
+                    command = new
+                    {
+                        type = command.Type,
+                        executedBy = userName,
+                        timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    }
+                };
+
+                SendJsonResponse(response, responseObj, 200);
+                logger.LogInfo($"Command '{command.Type}' executed by {userName} ({userId})");
             }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error executing command '{command.Type}': {ex.Message}");
+                SendErrorResponse(response, 500, "Command execution failed", ex.Message);
+            }
+        }
+
+        private List<object> GetAvailableCommands()
+        {
+            // Define all available commands with their metadata
+            return new List<object>
+            {
+                // Player Commands
+                new { name = "godmode", category = "Player", permission = "Advanced", description = "Toggle god mode for a player" },
+                new { name = "changeplayer", category = "Player", permission = "Advanced", description = "Change player character" },
+                new { name = "sethealth", category = "Player", permission = "Basic", description = "Set player health percentage" },
+                new { name = "setlevel", category = "Player", permission = "Basic", description = "Set player level" },
+                new { name = "setplayerstats", category = "Player", permission = "Advanced", description = "Set player stats (damage, armor, etc.)" },
+                new { name = "killplayer", category = "Player", permission = "Admin", description = "Kill a player" },
+                new { name = "reviveplayer", category = "Player", permission = "Admin", description = "Revive a dead player" },
+                new { name = "teleportplayer", category = "Player", permission = "Advanced", description = "Teleport player to coordinates" },
+                
+                // Item Commands
+                new { name = "spawnitem", category = "Items", permission = "Basic", description = "Spawn items for a player" },
+                
+                // Game Commands
+                new { name = "setmoney", category = "Game", permission = "Basic", description = "Set team money" },
+                new { name = "changestage", category = "Game", permission = "Admin", description = "Change to a different stage" },
+                
+                // Monster Commands
+                new { name = "spawnmonster", category = "Monsters", permission = "Advanced", description = "Spawn a monster" },
+                new { name = "givemonsteritem", category = "Monsters", permission = "Advanced", description = "Give item to monsters" },
+                new { name = "givemonsterbuff", category = "Monsters", permission = "Advanced", description = "Give buff to monsters" },
+                
+                // Teleporter Commands
+                new { name = "chargeteleporter", category = "Teleporter", permission = "Admin", description = "Set teleporter charge" },
+                new { name = "activateteleporter", category = "Teleporter", permission = "Admin", description = "Activate the teleporter" },
+                new { name = "skipteleporterevent", category = "Teleporter", permission = "Admin", description = "Skip teleporter event" },
+                new { name = "spawnteleporter", category = "Teleporter", permission = "Admin", description = "Spawn a teleporter" },
+                
+                // ESP Commands
+                new { name = "toggleespoverlay", category = "ESP", permission = "Basic", description = "Toggle ESP overlay" },
+                new { name = "configureespoverlay", category = "ESP", permission = "Basic", description = "Configure ESP settings" },
+                new { name = "testespoverlay", category = "ESP", permission = "Basic", description = "Test ESP overlay" },
+                new { name = "disableespoverlay", category = "ESP", permission = "Basic", description = "Disable ESP overlay" },
+                
+                // Debug Commands
+                new { name = "refreshstate", category = "Debug", permission = "ReadOnly", description = "Refresh game state" },
+                new { name = "debugitems", category = "Debug", permission = "ReadOnly", description = "Log all items to console" },
+                new { name = "debuginteractables", category = "Debug", permission = "ReadOnly", description = "Log all interactables" },
+                new { name = "debugmonsters", category = "Debug", permission = "ReadOnly", description = "Log all monsters" },
+                new { name = "debugplayeritems", category = "Debug", permission = "ReadOnly", description = "Log player items" },
+                new { name = "debugcharactericons", category = "Debug", permission = "ReadOnly", description = "Log character icons" },
+                new { name = "debugitemcatalog", category = "Debug", permission = "ReadOnly", description = "Refresh item catalog" },
+                new { name = "debugcharacterdefaults", category = "Debug", permission = "ReadOnly", description = "Refresh character defaults" }
+            };
+        }
+
+        private void SendJsonResponse(HttpListenerResponse response, object data, int statusCode = 200)
+        {
+            response.StatusCode = statusCode;
+            response.ContentType = "application/json";
+            
+            var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            var buffer = Encoding.UTF8.GetBytes(json);
+            response.ContentLength64 = buffer.Length;
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+        }
+
+        private void SendErrorResponse(HttpListenerResponse response, int statusCode, string message, string details = null)
+        {
+            var errorObj = new
+            {
+                success = false,
+                error = message,
+                details = details,
+                statusCode = statusCode,
+                timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            SendJsonResponse(response, errorObj, statusCode);
         }
     }
 }

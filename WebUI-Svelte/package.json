@@ -9,7 +9,12 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "build:portable": "tauri build --bundles none",
+    "build:windows": "tauri build --target x86_64-pc-windows-gnu",
+    "build:installer": "tauri build --bundles nsis",
+    "build:clean": "rm -rf src-tauri/target && tauri build --bundles none",
+    "build:debug": "tauri build --debug --bundles none"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.0",

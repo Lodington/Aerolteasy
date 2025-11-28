@@ -19,6 +19,7 @@ namespace RoR2DevTool
         private ESPOverlayService espOverlayService;
         private PermissionService permissionService;
         private NetworkingService networkingService;
+        private UILauncherService uiLauncherService;
 
         private bool wasServerActive = false;
         private bool wasClientActive = false;
@@ -34,6 +35,7 @@ namespace RoR2DevTool
             permissionService = new PermissionService(Logger);
             networkingService = new NetworkingService(Logger, permissionService, commandProcessor);
             httpServer = new HttpServer(Logger, gameStateService, networkingService, permissionService);
+            uiLauncherService = new UILauncherService(Logger);
             
             // Set ESP overlay service in command processor
             commandProcessor.SetESPOverlayService(espOverlayService);
@@ -46,6 +48,22 @@ namespace RoR2DevTool
             
             // Set initial host permissions for single player
             SetInitialHostPermissions();
+            
+            // Launch UI if not already running (with a small delay to ensure HTTP server is ready)
+            UnityEngine.MonoBehaviour.StartCoroutine(LaunchUIDelayed());
+        }
+
+        private System.Collections.IEnumerator LaunchUIDelayed()
+        {
+            // Wait 1 second for HTTP server to fully initialize
+            yield return new UnityEngine.WaitForSeconds(1f);
+            
+            Logger.LogInfo("Checking for RoR2 DevTool UI...");
+            uiLauncherService.LaunchUIIfNotRunning();
+            
+            // Wait another 2 seconds and check if UI connected
+            yield return new UnityEngine.WaitForSeconds(2f);
+            uiLauncherService.CheckUIConnection();
         }
 
         private void SetInitialHostPermissions()

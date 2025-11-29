@@ -12,6 +12,14 @@ using RoR2DevTool.Models;
 
 namespace RoR2DevTool.Services.Endpoints
 {
+    public class CommandInfo
+    {
+        public string name { get; set; }
+        public string category { get; set; }
+        public string permission { get; set; }
+        public string description { get; set; }
+    }
+
     public class CommandEndpoint : IApiEndpoint
     {
         private readonly NetworkingService networkingService;
@@ -115,8 +123,8 @@ namespace RoR2DevTool.Services.Endpoints
             }
 
             // Check permissions
-            var userPermission = permissionService.GetUserPermission(userId);
-            var requiredPermission = permissionService.GetRequiredPermission(command.Type);
+            var userPermission = permissionService.GetPermission(userId);
+            var requiredPermission = commandInfo.permission;
             
             if (!permissionService.HasPermission(userId, command.Type))
             {
@@ -153,54 +161,54 @@ namespace RoR2DevTool.Services.Endpoints
             }
         }
 
-        private List<object> GetAvailableCommands()
+        private List<CommandInfo> GetAvailableCommands()
         {
             // Define all available commands with their metadata
-            return new List<object>
+            return new List<CommandInfo>
             {
                 // Player Commands
-                new { name = "godmode", category = "Player", permission = "Advanced", description = "Toggle god mode for a player" },
-                new { name = "changeplayer", category = "Player", permission = "Advanced", description = "Change player character" },
-                new { name = "sethealth", category = "Player", permission = "Basic", description = "Set player health percentage" },
-                new { name = "setlevel", category = "Player", permission = "Basic", description = "Set player level" },
-                new { name = "setplayerstats", category = "Player", permission = "Advanced", description = "Set player stats (damage, armor, etc.)" },
-                new { name = "killplayer", category = "Player", permission = "Admin", description = "Kill a player" },
-                new { name = "reviveplayer", category = "Player", permission = "Admin", description = "Revive a dead player" },
-                new { name = "teleportplayer", category = "Player", permission = "Advanced", description = "Teleport player to coordinates" },
+                new CommandInfo { name = "godmode", category = "Player", permission = "Advanced", description = "Toggle god mode for a player" },
+                new CommandInfo { name = "changeplayer", category = "Player", permission = "Advanced", description = "Change player character" },
+                new CommandInfo { name = "sethealth", category = "Player", permission = "Basic", description = "Set player health percentage" },
+                new CommandInfo { name = "setlevel", category = "Player", permission = "Basic", description = "Set player level" },
+                new CommandInfo { name = "setplayerstats", category = "Player", permission = "Advanced", description = "Set player stats (damage, armor, etc.)" },
+                new CommandInfo { name = "killplayer", category = "Player", permission = "Admin", description = "Kill a player" },
+                new CommandInfo { name = "reviveplayer", category = "Player", permission = "Admin", description = "Revive a dead player" },
+                new CommandInfo { name = "teleportplayer", category = "Player", permission = "Advanced", description = "Teleport player to coordinates" },
                 
                 // Item Commands
-                new { name = "spawnitem", category = "Items", permission = "Basic", description = "Spawn items for a player" },
+                new CommandInfo { name = "spawnitem", category = "Items", permission = "Basic", description = "Spawn items for a player" },
                 
                 // Game Commands
-                new { name = "setmoney", category = "Game", permission = "Basic", description = "Set team money" },
-                new { name = "changestage", category = "Game", permission = "Admin", description = "Change to a different stage" },
+                new CommandInfo { name = "setmoney", category = "Game", permission = "Basic", description = "Set team money" },
+                new CommandInfo { name = "changestage", category = "Game", permission = "Admin", description = "Change to a different stage" },
                 
                 // Monster Commands
-                new { name = "spawnmonster", category = "Monsters", permission = "Advanced", description = "Spawn a monster" },
-                new { name = "givemonsteritem", category = "Monsters", permission = "Advanced", description = "Give item to monsters" },
-                new { name = "givemonsterbuff", category = "Monsters", permission = "Advanced", description = "Give buff to monsters" },
+                new CommandInfo { name = "spawnmonster", category = "Monsters", permission = "Advanced", description = "Spawn a monster" },
+                new CommandInfo { name = "givemonsteritem", category = "Monsters", permission = "Advanced", description = "Give item to monsters" },
+                new CommandInfo { name = "givemonsterbuff", category = "Monsters", permission = "Advanced", description = "Give buff to monsters" },
                 
                 // Teleporter Commands
-                new { name = "chargeteleporter", category = "Teleporter", permission = "Admin", description = "Set teleporter charge" },
-                new { name = "activateteleporter", category = "Teleporter", permission = "Admin", description = "Activate the teleporter" },
-                new { name = "skipteleporterevent", category = "Teleporter", permission = "Admin", description = "Skip teleporter event" },
-                new { name = "spawnteleporter", category = "Teleporter", permission = "Admin", description = "Spawn a teleporter" },
+                new CommandInfo { name = "chargeteleporter", category = "Teleporter", permission = "Admin", description = "Set teleporter charge" },
+                new CommandInfo { name = "activateteleporter", category = "Teleporter", permission = "Admin", description = "Activate the teleporter" },
+                new CommandInfo { name = "skipteleporterevent", category = "Teleporter", permission = "Admin", description = "Skip teleporter event" },
+                new CommandInfo { name = "spawnteleporter", category = "Teleporter", permission = "Admin", description = "Spawn a teleporter" },
                 
                 // ESP Commands
-                new { name = "toggleespoverlay", category = "ESP", permission = "Basic", description = "Toggle ESP overlay" },
-                new { name = "configureespoverlay", category = "ESP", permission = "Basic", description = "Configure ESP settings" },
-                new { name = "testespoverlay", category = "ESP", permission = "Basic", description = "Test ESP overlay" },
-                new { name = "disableespoverlay", category = "ESP", permission = "Basic", description = "Disable ESP overlay" },
+                new CommandInfo { name = "toggleespoverlay", category = "ESP", permission = "Basic", description = "Toggle ESP overlay" },
+                new CommandInfo { name = "configureespoverlay", category = "ESP", permission = "Basic", description = "Configure ESP settings" },
+                new CommandInfo { name = "testespoverlay", category = "ESP", permission = "Basic", description = "Test ESP overlay" },
+                new CommandInfo { name = "disableespoverlay", category = "ESP", permission = "Basic", description = "Disable ESP overlay" },
                 
                 // Debug Commands
-                new { name = "refreshstate", category = "Debug", permission = "ReadOnly", description = "Refresh game state" },
-                new { name = "debugitems", category = "Debug", permission = "ReadOnly", description = "Log all items to console" },
-                new { name = "debuginteractables", category = "Debug", permission = "ReadOnly", description = "Log all interactables" },
-                new { name = "debugmonsters", category = "Debug", permission = "ReadOnly", description = "Log all monsters" },
-                new { name = "debugplayeritems", category = "Debug", permission = "ReadOnly", description = "Log player items" },
-                new { name = "debugcharactericons", category = "Debug", permission = "ReadOnly", description = "Log character icons" },
-                new { name = "debugitemcatalog", category = "Debug", permission = "ReadOnly", description = "Refresh item catalog" },
-                new { name = "debugcharacterdefaults", category = "Debug", permission = "ReadOnly", description = "Refresh character defaults" }
+                new CommandInfo { name = "refreshstate", category = "Debug", permission = "ReadOnly", description = "Refresh game state" },
+                new CommandInfo { name = "debugitems", category = "Debug", permission = "ReadOnly", description = "Log all items to console" },
+                new CommandInfo { name = "debuginteractables", category = "Debug", permission = "ReadOnly", description = "Log all interactables" },
+                new CommandInfo { name = "debugmonsters", category = "Debug", permission = "ReadOnly", description = "Log all monsters" },
+                new CommandInfo { name = "debugplayeritems", category = "Debug", permission = "ReadOnly", description = "Log player items" },
+                new CommandInfo { name = "debugcharactericons", category = "Debug", permission = "ReadOnly", description = "Log character icons" },
+                new CommandInfo { name = "debugitemcatalog", category = "Debug", permission = "ReadOnly", description = "Refresh item catalog" },
+                new CommandInfo { name = "debugcharacterdefaults", category = "Debug", permission = "ReadOnly", description = "Refresh character defaults" }
             };
         }
 

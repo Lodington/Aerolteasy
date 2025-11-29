@@ -9,9 +9,9 @@ namespace RoR2DevTool
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     public class RoR2DevToolPlugin : BaseUnityPlugin
     {
-        public const string PluginGUID = "com.devtool.ror2";
-        public const string PluginName = "RoR2 Development Tool";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginGUID = "com.Lodington.Aerolt";
+        public const string PluginName = "Aerolt";
+        public const string PluginVersion = "5.0.0";
 
         private HttpServer httpServer;
         private GameStateService gameStateService;
@@ -50,7 +50,7 @@ namespace RoR2DevTool
             SetInitialHostPermissions();
             
             // Launch UI if not already running (with a small delay to ensure HTTP server is ready)
-            UnityEngine.MonoBehaviour.StartCoroutine(LaunchUIDelayed());
+            StartCoroutine(LaunchUIDelayed());
         }
 
         private System.Collections.IEnumerator LaunchUIDelayed()

@@ -8,8 +8,8 @@ namespace RoR2DevTool.Services
     public class UILauncherService
     {
         private readonly ManualLogSource logger;
-        private const string UI_PROCESS_NAME = "ror2-devtool-ui";
-        private const string UI_EXE_NAME = "ror2-devtool-ui.exe";
+        private const string UI_PROCESS_NAME = "ror2-devtool";
+        private const string UI_EXE_NAME = "ror2-devtool.exe";
         
         public UILauncherService(ManualLogSource logger)
         {

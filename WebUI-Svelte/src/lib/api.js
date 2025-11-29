@@ -1,8 +1,14 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+// Detect if running in Tauri (production) or browser (development)
+const isTauri = window.__TAURI__ !== undefined;
+const API_BASE_URL = isTauri 
+  ? 'http://localhost:8080/api'  // Production: Tauri app on port 1420, connects to game on 8080
+  : 'http://localhost:8080/api'; // Development: Vite on port 5173, connects to game on 8080
 
 export class RoR2API {
   constructor() {
     this.baseUrl = API_BASE_URL;
+    console.log(`API initialized in ${isTauri ? 'production (Tauri)' : 'development (Vite)'} mode`);
+    console.log(`Connecting to game server at: ${this.baseUrl}`);
   }
 
   async getGameState() {

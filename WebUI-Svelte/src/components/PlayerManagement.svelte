@@ -22,7 +22,7 @@
   import ItemManagement from "./player/ItemManagement.svelte";
 
   // UI State
-  let activeTab = "overview";
+  let activeTab = "items";
   let targetMode = "selected"; // 'selected' or 'all'
   let isProcessing = false;
 
@@ -521,7 +521,7 @@
             </div>
           {:else if activeTab === "items"}
             <!-- Use the ItemManagement component -->
-            <ItemManagement {refreshGameState} />
+            <ItemManagement {availableItems} {refreshGameState} />
           {:else}
             <div class="card bg-error text-error-content">
               <div class="card-body">

@@ -9,6 +9,7 @@
   import RunRequiredOverlay from "./components/RunRequiredOverlay.svelte";
   import Toast from "./components/Toast.svelte";
   import NetworkStatusIndicator from "./components/NetworkStatusIndicator.svelte";
+  import { PanelLeftClose, PanelLeftOpen } from "lucide-svelte";
   
   // View components
   import PlayerView from "./components/views/PlayerView.svelte";
@@ -24,6 +25,7 @@
   let previousRunState = false;
   let justEndedRun = false;
   let mockModeActive = false;
+  let sidebarCollapsed = false;
 
   onMount(() => {
     startPolling();
@@ -383,7 +385,7 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
   {#if showOverlay}
     <RunRequiredOverlay {justEndedRun} />
   {:else}
-    <div class="drawer lg:drawer-open">
+    <div class="drawer lg:drawer-open" class:sidebar-collapsed={sidebarCollapsed}>
       <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
       
       <!-- Main Content Area -->
@@ -391,9 +393,33 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
         <!-- Top Navigation -->
         <Navigation activeView={currentView} on:viewChange={handleViewChange} />
         
+        <!-- Floating Sidebar Toggle Button -->
+        <!-- Mobile: Always show to open drawer -->
+        <label 
+          for="drawer-toggle" 
+          class="btn btn-primary btn-circle fixed bottom-6 left-6 z-50 lg:hidden shadow-lg"
+          title="Open sidebar"
+        >
+          <PanelLeftOpen size={20} />
+        </label>
+
+        <!-- Desktop: Only show when sidebar is collapsed -->
+        {#if sidebarCollapsed}
+          <button 
+            class="btn btn-primary btn-circle fixed bottom-6 left-6 shadow-2xl hover:scale-110 transition-transform hidden lg:flex"
+            style="z-index: 9999;"
+            on:click={() => {
+              sidebarCollapsed = false;
+            }}
+            title="Expand sidebar"
+          >
+            <PanelLeftOpen size={20} />
+          </button>
+        {/if}
+
         <!-- Main Content with proper spacing -->
-        <main class="flex-1 p-4 lg:p-6 bg-base-100">
-          <div class="max-w-7xl mx-auto animate-fade-in">
+        <main class="flex-1 p-4 lg:p-6 bg-base-100 overflow-x-hidden">
+          <div class="max-w-7xl mx-auto animate-fade-in w-full">
             {#if currentView === 'players'}
               <PlayerView />
             {:else if currentView === 'monsters'}
@@ -425,19 +451,38 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
       <!-- Sidebar -->
       <div class="drawer-side">
         <label for="drawer-toggle" class="drawer-overlay"></label>
-        <aside class="w-80 min-h-full bg-base-200 border-r border-base-300">
+        <aside class="w-80 min-h-full bg-base-200 border-r border-base-300 transition-all duration-300" class:collapsed={sidebarCollapsed}>
           <!-- Sidebar Header -->
           <div class="p-4 border-b border-base-300">
-            <div class="flex items-center gap-3">
-              <div class="avatar placeholder">
-                <div class="bg-primary text-primary-content rounded-lg w-10">
-                  <span class="text-xl">📊</span>
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="avatar placeholder">
+                  <div class="bg-primary text-primary-content rounded-lg w-10">
+                    <span class="text-xl">📊</span>
+                  </div>
+                </div>
+                <div>
+                  <h2 class="font-bold text-lg">Game State</h2>
+                  <p class="text-sm opacity-70">Live monitoring</p>
                 </div>
               </div>
-              <div>
-                <h2 class="font-bold text-lg">Game State</h2>
-                <p class="text-sm opacity-70">Live monitoring</p>
-              </div>
+              <!-- Single collapse button for both mobile and desktop -->
+              <button 
+                class="btn btn-ghost btn-sm btn-square" 
+                on:click={() => {
+                  // Mobile: close drawer
+                  const drawerToggle = document.getElementById('drawer-toggle');
+                  if (drawerToggle && window.innerWidth < 1024) {
+                    drawerToggle.click();
+                  } else {
+                    // Desktop: toggle collapse
+                    sidebarCollapsed = !sidebarCollapsed;
+                  }
+                }}
+                title="Close sidebar"
+              >
+                <PanelLeftClose size={20} />
+              </button>
             </div>
           </div>
           
@@ -472,5 +517,44 @@ Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
 }
 
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+
+/* Sidebar collapse on desktop */
+@media (min-width: 1024px) {
+  /* Hide sidebar when collapsed */
+  .drawer.sidebar-collapsed .drawer-side {
+    display: none;
+  }
+  
+  /* Make content take full width when sidebar is collapsed */
+  .drawer.sidebar-collapsed .drawer-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Override DaisyUI drawer grid when collapsed */
+  .drawer.sidebar-collapsed {
+    display: block !important;
+  }
+  
+  /* Smooth transition for content */
+  .drawer-content {
+    transition: margin-left 0.3s ease, width 0.3s ease;
+  }
+}
+
+/* Floating button pulse animation */
+.btn-circle.fixed {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
 
 </style>

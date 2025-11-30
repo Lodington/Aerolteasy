@@ -140,13 +140,18 @@ export class RoR2API {
 
   async checkStatus() {
     try {
+      console.log(`[API] Checking status at: ${this.baseUrl}/status`);
       const response = await fetch(`${this.baseUrl}/status`);
+      console.log(`[API] Status response:`, response.status, response.ok);
+      
       if (response.ok) {
         const status = await response.json();
+        console.log(`[API] Status data:`, status);
         return status.connected && status.gameRunning;
       }
     } catch (error) {
-      console.error('Connection check failed:', error);
+      console.error('[API] Connection check failed:', error.message);
+      console.error('[API] Full error:', error);
     }
     return false;
   }

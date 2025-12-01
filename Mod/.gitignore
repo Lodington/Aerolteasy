@@ -1,1 +1,13 @@
-/bin/
+# Build outputs
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# Rider
+.idea/
+*.DotSettings.user
+
+# Visual Studio
+.vs/

@@ -1,9 +1,128 @@
-Mod/.idea/.idea.Mod.dir/.idea/vcs.xml
-WebUI-Svelte/dist/assets/index-B1ucMPun.js
-WebUI-Svelte/dist/assets/index-DnL70H3F.css
-WebUI-Svelte/dist/index.html
-Mod/obj/rider.project.model.nuget.info
+# ============================================================================
+# C# / .NET / Rider / Visual Studio
+# ============================================================================
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Rider
+.idea/
+*.sln.iml
+.idea/.idea.Mod.dir/
+Mod/.idea/
+Mod/Folder.DotSettings.user
+
+# Visual Studio cache/options
+.vs/
+*.rsuser
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ============================================================================
+# Node / NPM / Svelte / Tauri
+# ============================================================================
+node_modules/
+/node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+.output/
+.vercel/
+.netlify/
+
+# Svelte
+.svelte-kit/
+__sveltekit/
+
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+WebUI-Svelte/src-tauri/target/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Lock files (keep package-lock.json, ignore others)
+pnpm-lock.yaml
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+*.local
+
+# ============================================================================
+# OS Files
+# ============================================================================
+Thumbs.db
+Desktop.ini
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ============================================================================
+# Temporary / Cache
+# ============================================================================
+*.tmp
+*.temp
+*.cache
+*.log
+*.swp
+*.swo
+*~
+
+# ============================================================================
+# Project Specific
+# ============================================================================
 setup-windows-build.sh
-Mod/obj/
-WebUI-Svelte/dist/
 

@@ -126,3 +126,22 @@ Desktop.ini
 # ============================================================================
 setup-windows-build.sh
 
+.vscode/settings.json
+Mod/obj/project.assets.json
+Mod/obj/project.nuget.cache
+Mod/obj/project.packagespec.json
+Mod/obj/rider.project.model.nuget.info
+Mod/obj/rider.project.restore.info
+Mod/obj/RoR2DevTool.csproj.nuget.dgspec.json
+Mod/obj/RoR2DevTool.csproj.nuget.g.props
+Mod/obj/RoR2DevTool.csproj.nuget.g.targets
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.AssemblyInfo.cs
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.AssemblyInfoInputs.cache
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.assets.cache
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.csproj.AssemblyReference.cache
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.csproj.CoreCompileInputs.cache
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.csproj.FileListAbsolute.txt
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.dll
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.GeneratedMSBuildEditorConfig.editorconfig
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.pdb
+Mod/obj/Debug/netstandard2.1/RoR2DevTool.sourcelink.json

@@ -3,6 +3,7 @@
   import { gameState, isConnected, selectedPlayerId, networkStatus, toast, showToast } from "./lib/stores.js";
   import { api } from "./lib/api.js";
   import { networkApi } from "./lib/networkApi.js";
+  import { sseClient } from "./lib/sseClient.js";
 
   import Navigation from "./components/Navigation.svelte";
   import GameStatePanel from "./components/GameStatePanel.svelte";
@@ -28,23 +29,54 @@
   let sidebarCollapsed = false;
 
   onMount(() => {
-    startPolling();
+    startSSE();
     setupBrowserConsoleCommands();
   });
 
   onDestroy(() => {
+    sseClient.disconnect();
     if (pollInterval) {
       clearInterval(pollInterval);
     }
   });
 
-  function startPolling() {
-    pollInterval = setInterval(async () => {
-      // Skip polling if we're in mock mode
-      if (mockModeActive) {
-        console.log('⏸️ Polling skipped - Mock mode active');
-        return;
+  function startSSE() {
+    // Connect to SSE for real-time game state updates
+    sseClient.connect(
+      // On game state update
+      (state) => {
+        if (!mockModeActive) {
+          gameState.set(state);
+        }
+      },
+      // On connection/status change
+      (connected) => {
+        isConnected.set(connected);
+        if (connected) {
+          console.log('✅ Connected to game server via SSE');
+        } else {
+          console.log('❌ Disconnected from game server');
+        }
       }
+    );
+
+    // Listen for network status updates
+    window.addEventListener('networkstatus', (event) => {
+      if (!mockModeActive) {
+        networkStatus.set(event.detail);
+        console.log('📡 Network status updated:', event.detail);
+      }
+    });
+
+    // No polling needed - everything comes via SSE!
+    console.log('🎯 Using pure SSE mode - no polling');
+  }
+
+  // Fallback to polling if SSE fails (kept for emergency fallback)
+  function startPolling() {
+    console.log('⚠️ Falling back to polling mode');
+    pollInterval = setInterval(async () => {
+      if (mockModeActive) return;
       
       try {
         const connected = await api.checkStatus();
@@ -52,21 +84,13 @@
 
         if (connected) {
           const state = await api.getGameState();
-          if (state) {
-            gameState.set(state);
-          }
-
-          // Poll network status
-          const netStatus = await networkApi.getNetworkStatus();
-          if (netStatus) {
-            networkStatus.set(netStatus);
-          }
+          if (state) gameState.set(state);
         }
       } catch (error) {
         console.error("Polling error:", error);
         isConnected.set(false);
       }
-    }, 1000); // Reduced from 500ms to 1000ms to reduce load
+    }, 1000);
   }
 
   function handleViewChange(event) {
@@ -84,6 +108,8 @@
                    $gameState.Players.length === 0 || 
                    !$isConnected
                    );
+  
+
 
   // Watch for run state changes and reset UI when run ends
   $: {
@@ -209,14 +235,26 @@
       showToast('Mock data cleared - Polling resumed', 'info');
     };
 
-    // Force restart polling (useful for debugging)
-    window.restartPolling = () => {
-      console.log('🔄 Restarting polling...');
+    // Force restart SSE connection (useful for debugging)
+    window.restartSSE = () => {
+      console.log('🔄 Restarting SSE connection...');
+      sseClient.disconnect();
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+      startSSE();
+      console.log('✅ SSE connection restarted');
+    };
+
+    // Switch to polling mode
+    window.usePolling = () => {
+      console.log('🔄 Switching to polling mode...');
+      sseClient.disconnect();
       if (pollInterval) {
         clearInterval(pollInterval);
       }
       startPolling();
-      console.log('✅ Polling restarted');
+      console.log('✅ Now using polling mode');
     };
 
     // Help function
@@ -224,10 +262,12 @@
       console.log(`
 🎮 RoR2 Dev Tool - Browser Console Commands:
 
-📊 generateMockData()  - Generate fake game data for UI testing (disables polling)
-🧹 clearMockData()     - Clear mock data and resume normal polling
-🔍 mockStatus()        - Check current mock mode and polling status
-🔄 restartPolling()    - Force restart the polling interval
+📊 generateMockData()  - Generate fake game data for UI testing (disables SSE)
+🧹 clearMockData()     - Clear mock data and resume normal SSE
+🔍 mockStatus()        - Check current mock mode and connection status
+🔍 sseDebug()          - Show detailed SSE connection information
+🔄 restartSSE()        - Force restart the SSE connection
+🔄 usePolling()        - Switch to polling mode (fallback)
 ❓ devHelp()           - Show this help message
 
 Example usage:
@@ -241,14 +281,30 @@ Mock Mode Features:
 - Perfect for UI development and demonstrations
 
 Current Status: ${mockModeActive ? '🧪 Mock Mode Active' : '🔴 Normal Mode'}
+Connection: ${sseClient.getConnectionStatus() ? '✅ SSE Connected' : '❌ Disconnected'}
       `);
     };
 
     // Add status check function
     window.mockStatus = () => {
+      const sseConnected = sseClient.getConnectionStatus();
+      const debugInfo = sseClient.getDebugInfo();
       console.log(`Mock Mode: ${mockModeActive ? '🧪 ACTIVE' : '🔴 INACTIVE'}`);
-      console.log(`Polling: ${mockModeActive ? '⏸️ PAUSED' : '▶️ RUNNING'}`);
-      return { mockMode: mockModeActive, polling: !mockModeActive };
+      console.log(`SSE Connection: ${sseConnected ? '✅ CONNECTED' : '❌ DISCONNECTED'}`);
+      console.log(`SSE Debug:`, debugInfo);
+      console.log(`Updates: ${mockModeActive ? '⏸️ PAUSED' : '▶️ RUNNING'}`);
+      return { mockMode: mockModeActive, sseConnected, debugInfo, updatesActive: !mockModeActive };
+    };
+
+    // Add SSE debug command
+    window.sseDebug = () => {
+      const info = sseClient.getDebugInfo();
+      console.log('🔍 SSE Connection Debug Info:');
+      console.log('  URL:', info.url);
+      console.log('  Ready State:', info.readyStateText, `(${info.readyState})`);
+      console.log('  Is Connected:', info.isConnected);
+      console.log('\nTo test SSE manually, open: http://localhost:8080/api/events');
+      return info;
     };
 
     console.log('🎮 RoR2 Dev Tool loaded! Type devHelp() for available commands.');

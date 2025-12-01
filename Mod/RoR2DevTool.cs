@@ -20,6 +20,7 @@ namespace RoR2DevTool
         private PermissionService permissionService;
         private NetworkingService networkingService;
         private UILauncherService uiLauncherService;
+        private SSEService sseService;
 
         private bool wasServerActive = false;
         private bool wasClientActive = false;
@@ -34,7 +35,8 @@ namespace RoR2DevTool
             commandProcessor = new CommandProcessor(Logger, gameStateService);
             permissionService = new PermissionService(Logger);
             networkingService = new NetworkingService(Logger, permissionService, commandProcessor);
-            httpServer = new HttpServer(Logger, gameStateService, networkingService, permissionService);
+            sseService = new SSEService(Logger, gameStateService, permissionService);
+            httpServer = new HttpServer(Logger, gameStateService, networkingService, permissionService, sseService);
             uiLauncherService = new UILauncherService(Logger);
             
             // Set ESP overlay service in command processor
@@ -43,8 +45,9 @@ namespace RoR2DevTool
             // Initialize ESP overlay service
             espOverlayService.Initialize();
             
-            // Start HTTP server
+            // Start HTTP server and SSE service
             httpServer.Start();
+            sseService.Start();
             
             // Set initial host permissions for single player
             SetInitialHostPermissions();
@@ -199,6 +202,7 @@ namespace RoR2DevTool
         {
             networkingService?.Shutdown();
             espOverlayService?.Cleanup();
+            sseService?.Stop();
             httpServer?.Stop();
         }
     }

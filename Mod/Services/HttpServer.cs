@@ -16,10 +16,12 @@ namespace RoR2DevTool.Services
         private int serverPort = 8080;
         private ManualLogSource logger;
         private Dictionary<string, IApiEndpoint> endpoints;
+        private SSEService sseService;
 
-        public HttpServer(ManualLogSource logger, GameStateService gameStateService, NetworkingService networkingService, PermissionService permissionService)
+        public HttpServer(ManualLogSource logger, GameStateService gameStateService, NetworkingService networkingService, PermissionService permissionService, SSEService sseService)
         {
             this.logger = logger;
+            this.sseService = sseService;
             
             // Register all endpoints
             endpoints = new Dictionary<string, IApiEndpoint>(StringComparer.OrdinalIgnoreCase)
@@ -31,7 +33,8 @@ namespace RoR2DevTool.Services
                 { "/api/characterdefaults", new CharacterDefaultsEndpoint(gameStateService, logger) },
                 { "/api/network/status", new NetworkStatusEndpoint(permissionService, logger) },
                 { "/api/permissions", new PermissionsEndpoint(permissionService, logger) },
-                { "/api/permissions/request", new RequestPermissionEndpoint(networkingService, logger) }
+                { "/api/permissions/request", new RequestPermissionEndpoint(networkingService, logger) },
+                { "/api/events", new SSEEndpoint(sseService, logger) }
             };
         }
 
@@ -89,6 +92,7 @@ namespace RoR2DevTool.Services
             var context = (HttpListenerContext)contextObj;
             var request = context.Request;
             var response = context.Response;
+            bool shouldCloseResponse = true;
 
             try
             {
@@ -108,6 +112,12 @@ namespace RoR2DevTool.Services
                 
                 if (endpoints.TryGetValue(path, out var endpoint))
                 {
+                    // SSE connections stay open - don't close them
+                    if (path == "/api/events")
+                    {
+                        shouldCloseResponse = false;
+                    }
+                    
                     endpoint.HandleRequest(request, response);
                 }
                 else
@@ -122,7 +132,10 @@ namespace RoR2DevTool.Services
             }
             finally
             {
-                response.Close();
+                if (shouldCloseResponse)
+                {
+                    response.Close();
+                }
             }
         }
     }

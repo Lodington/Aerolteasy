@@ -47,6 +47,8 @@ namespace RoR2DevTool.Services
             RegisterCommand(new RevivePlayerCommand());
             RegisterCommand(new SetPlayerStatsCommand());
             RegisterCommand(new TeleportPlayerCommand());
+            RegisterCommand(new TeleportToPlayerCommand());
+            RegisterCommand(new TeleportAllToCommand());
             
             // Item Commands
             RegisterCommand(new SpawnItemCommand());

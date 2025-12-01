@@ -1,10 +1,14 @@
 <script>
-  import { selectedPlayer } from '../../lib/stores.js';
+  import { selectedPlayer, gameState } from '../../lib/stores.js';
   import Button from '../Button.svelte';
-  import { Shield, Target, Heart, Zap, RotateCcw, Coins, TrendingUp, Users, User } from 'lucide-svelte';
+  import { Shield, Target, Heart, Zap, RotateCcw, Coins, TrendingUp, Users, User, Navigation } from 'lucide-svelte';
   import { api } from '../../lib/api.js';
   
   export let refreshGameState = () => {};
+
+  // Get list of other players for teleport target
+  $: otherPlayers = $gameState.Players?.filter(p => p.PlayerId !== $selectedPlayer?.PlayerId) || [];
+  let teleportTargetId = null;
 
   // Action target mode
   let actionTarget = 'selected'; // 'selected' or 'all'
@@ -81,6 +85,50 @@
   // Execute money action with specific amount
   function executeMoneyAction(amount) {
     giveMoney(amount, actionTarget === 'all');
+  }
+
+  // Teleport selected player to another player
+  async function teleportToPlayer() {
+    if (!teleportTargetId) return;
+    
+    try {
+      // Find target player
+      const targetPlayer = $gameState.Players.find(p => p.PlayerId === parseInt(teleportTargetId));
+      if (!targetPlayer) {
+        console.error('Target player not found');
+        return;
+      }
+
+      // Get target player's position (we'll need to add this to game state)
+      // For now, use a command to teleport
+      await api.sendCommand({
+        Type: 'teleporttoPlayer',
+        Data: { 
+          playerId: $selectedPlayer.PlayerId,
+          targetPlayerId: targetPlayer.PlayerId
+        }
+      });
+      
+      setTimeout(refreshGameState, 50);
+    } catch (error) {
+      console.error('Failed to teleport player:', error);
+    }
+  }
+
+  // Teleport all other players to selected player
+  async function teleportAllToMe() {
+    try {
+      await api.sendCommand({
+        Type: 'teleportallto',
+        Data: { 
+          targetPlayerId: $selectedPlayer.PlayerId
+        }
+      });
+      
+      setTimeout(refreshGameState, 50);
+    } catch (error) {
+      console.error('Failed to teleport all players:', error);
+    }
   }
 </script>
 
@@ -176,6 +224,73 @@
         </div>
       </div>
     </div>
+
+    <!-- Teleport Section -->
+    <div class="divider">Teleport</div>
+    
+    {#if otherPlayers.length > 0}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Teleport To Player -->
+        <div class="card bg-base-200">
+          <div class="card-body p-4">
+            <h4 class="font-semibold text-sm mb-2 flex items-center gap-2">
+              <Navigation size={16} />
+              Teleport To Player
+            </h4>
+            <div class="form-control">
+              <select 
+                class="select select-bordered select-sm w-full"
+                bind:value={teleportTargetId}
+              >
+                <option value={null}>Select player...</option>
+                {#each otherPlayers as player}
+                  <option value={player.PlayerId}>
+                    {player.PlayerName} (Level {player.Level})
+                  </option>
+                {/each}
+              </select>
+            </div>
+            <button 
+              class="btn btn-primary btn-sm mt-2"
+              disabled={!teleportTargetId}
+              on:click={teleportToPlayer}
+            >
+              <Navigation size={14} />
+              Teleport
+            </button>
+          </div>
+        </div>
+
+        <!-- Teleport All To Me -->
+        <div class="card bg-base-200">
+          <div class="card-body p-4">
+            <h4 class="font-semibold text-sm mb-2 flex items-center gap-2">
+              <Users size={16} />
+              Teleport All To Me
+            </h4>
+            <p class="text-xs opacity-70 mb-2">
+              Bring all other players to {$selectedPlayer.PlayerName}'s location
+            </p>
+            <button 
+              class="btn btn-secondary btn-sm"
+              on:click={teleportAllToMe}
+            >
+              <Users size={14} />
+              Teleport All Here
+            </button>
+          </div>
+        </div>
+      </div>
+    {:else}
+      <div class="alert alert-info">
+        <div class="flex items-center gap-2">
+          <User size={16} />
+          <span class="text-sm">
+            Teleport features are available in multiplayer games with 2+ players
+          </span>
+        </div>
+      </div>
+    {/if}
 
     <!-- Target Info -->
     <div class="alert alert-info mt-4">

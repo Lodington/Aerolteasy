@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using RoR2;
 using RoR2DevTool.Core;
 using RoR2DevTool.Models;
+using RoR2DevTool.Networking;
 using UnityEngine.Networking;
 
 namespace RoR2DevTool.Services
@@ -13,19 +14,15 @@ namespace RoR2DevTool.Services
         private readonly ManualLogSource logger;
         private readonly PermissionService permissionService;
         private readonly CommandProcessor commandProcessor;
+        private readonly DevToolNetworkManager networkManager;
         private bool isInitialized = false;
-
-        // Network message types
-        private const short MSG_COMMAND = 1000;
-        private const short MSG_PERMISSION_REQUEST = 1001;
-        private const short MSG_PERMISSION_RESPONSE = 1002;
-        private const short MSG_PERMISSION_UPDATE = 1003;
 
         public NetworkingService(ManualLogSource logger, PermissionService permissionService, CommandProcessor commandProcessor)
         {
             this.logger = logger;
             this.permissionService = permissionService;
             this.commandProcessor = commandProcessor;
+            this.networkManager = new DevToolNetworkManager(logger, permissionService, commandProcessor);
         }
 
         public void Initialize()
@@ -35,20 +32,11 @@ namespace RoR2DevTool.Services
 
             try
             {
-                // Set host if we're the server
-                if (NetworkServer.active)
-                {
-                    var localUser = LocalUserManager.GetFirstLocalUser();
-                    if (localUser != null && localUser.currentNetworkUser != null)
-                    {
-                        string hostId = GetUserNetworkId(localUser.currentNetworkUser);
-                        permissionService.SetHost(hostId);
-                        logger.LogInfo($"Host permissions set for user: {hostId}");
-                    }
-                }
+                // Initialize the network manager
+                networkManager.Initialize();
 
                 isInitialized = true;
-                logger.LogInfo("NetworkingService initialized");
+                logger.LogInfo("NetworkingService initialized with full multiplayer support");
             }
             catch (Exception ex)
             {
@@ -63,6 +51,7 @@ namespace RoR2DevTool.Services
 
             try
             {
+                networkManager.Shutdown();
                 isInitialized = false;
                 logger.LogInfo("NetworkingService shutdown");
             }
@@ -74,27 +63,29 @@ namespace RoR2DevTool.Services
 
         public void SendCommand(DevCommand command, string senderId, string senderName)
         {
-            // Simplified: Just check permissions and execute locally
-            // In a real multiplayer scenario, you would use RoR2's networking system
-            // or a custom networking solution like R2API
-            
-            if (NetworkServer.active)
+            if (networkManager.IsHost())
             {
-                // We're the host, check permissions and execute
+                // We're the host, check permissions and execute locally
                 if (permissionService.HasPermission(senderId, command.Type))
                 {
-                    logger.LogInfo($"Executing command from {senderName}: {command.Type}");
+                    logger.LogInfo($"[Host] Executing command from {senderName}: {command.Type}");
                     commandProcessor.EnqueueCommand(command);
                 }
                 else
                 {
-                    logger.LogWarning($"User {senderName} ({senderId}) lacks permission for command: {command.Type}");
+                    logger.LogWarning($"[Host] User {senderName} ({senderId}) lacks permission for command: {command.Type}");
                 }
+            }
+            else if (networkManager.IsClient())
+            {
+                // We're a client, send command to host for validation and execution
+                logger.LogInfo($"[Client] Sending command to host: {command.Type}");
+                networkManager.SendCommand(command, senderId, senderName);
             }
             else
             {
-                // We're a client or single player, execute locally
-                logger.LogInfo($"Executing command locally: {command.Type}");
+                // Single player, execute locally
+                logger.LogInfo($"[SinglePlayer] Executing command locally: {command.Type}");
                 commandProcessor.EnqueueCommand(command);
             }
         }
@@ -111,19 +102,25 @@ namespace RoR2DevTool.Services
             }
 
             string userId = GetUserNetworkId(localUser.currentNetworkUser);
-            
-            // Simplified: Auto-approve Basic and ReadOnly, log others for manual approval
-            bool autoApprove = level <= PermissionLevel.Basic;
+            string userName = localUser.currentNetworkUser.userName;
 
-            if (autoApprove)
+            if (networkManager.IsHost())
             {
+                // Host can grant themselves any permission
                 permissionService.SetPermission(userId, level);
-                logger.LogInfo($"Auto-approved {level} permission for {localUser.currentNetworkUser.userName}");
+                logger.LogInfo($"[Host] Granted self {level} permission");
+            }
+            else if (networkManager.IsClient())
+            {
+                // Client must request from host
+                logger.LogInfo($"[Client] Requesting {level} permission from host");
+                networkManager.RequestPermission(userId, userName, level);
             }
             else
             {
-                logger.LogInfo($"Permission request for {level} from {localUser.currentNetworkUser.userName} requires manual approval");
-                logger.LogInfo($"Use the API to grant: POST /api/permissions with userId={userId} and level={level}");
+                // Single player - auto-approve
+                permissionService.SetPermission(userId, level);
+                logger.LogInfo($"[SinglePlayer] Auto-approved {level} permission");
             }
         }
 

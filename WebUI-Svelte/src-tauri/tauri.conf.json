@@ -38,8 +38,21 @@
         "language": "en-US"
       },
       "nsis": {
-        "compression": "lzma"
-      }
-    }
+        "compression": "lzma",
+        "displayLanguageSelector": false
+      },
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "fileDescription": "Risk of Rain 2 Development Tool",
+      "productName": "RoR2 DevTool"
+    },
+    "resources": [],
+    "externalBin": [],
+    "publisher": "RoR2 DevTool Team",
+    "copyright": "Copyright © 2024 RoR2 DevTool Team",
+    "category": "DeveloperTool",
+    "shortDescription": "Development and debugging tool for Risk of Rain 2",
+    "longDescription": "A comprehensive development tool for Risk of Rain 2 modding and testing. Provides player management, item spawning, and debugging features."
   }
 }

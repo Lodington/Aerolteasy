@@ -17,8 +17,19 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
     sourcemap: !!process.env.TAURI_DEBUG,
     rollupOptions: {
-      input: './index.html'
-    }
+      input: './index.html',
+      output: {
+        manualChunks: {
+          // Split vendor code for better caching
+          'vendor': ['svelte'],
+          'icons': ['lucide-svelte']
+        }
+      }
+    },
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
+    // Enable CSS code splitting
+    cssCodeSplit: true
   },
   clearScreen: false,
   envPrefix: ['VITE_', 'TAURI_']

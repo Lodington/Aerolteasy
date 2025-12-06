@@ -13,6 +13,8 @@
   // Item management state
   let itemFilter = '';
   let expandedItems = new Set();
+  let editingItem = null;
+  let editValue = '';
 
   // Filtered items for display
   $: filteredItems = Object.entries($selectedPlayer?.Items || {}).filter(([itemName, count]) => {
@@ -77,6 +79,55 @@
       } catch (error) {
         console.error('Failed to remove item:', error);
       }
+    }
+  }
+
+  function startEditingCount(itemName, currentCount, event) {
+    event.stopPropagation();
+    editingItem = itemName;
+    editValue = currentCount.toString();
+    // Focus the input after it renders
+    setTimeout(() => {
+      const input = document.querySelector('.count-edit-input');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 10);
+  }
+
+  function cancelEdit() {
+    editingItem = null;
+    editValue = '';
+  }
+
+  async function saveEditedCount(itemName, oldCount) {
+    const newCount = parseInt(editValue);
+    
+    if (isNaN(newCount) || newCount < 0) {
+      cancelEdit();
+      return;
+    }
+
+    const difference = newCount - oldCount;
+    
+    if (difference !== 0) {
+      try {
+        await api.spawnItem(itemName, difference, $selectedPlayer.PlayerId);
+        setTimeout(refreshGameState, 50);
+      } catch (error) {
+        console.error('Failed to update item count:', error);
+      }
+    }
+    
+    cancelEdit();
+  }
+
+  function handleEditKeydown(event, itemName, oldCount) {
+    if (event.key === 'Enter') {
+      saveEditedCount(itemName, oldCount);
+    } else if (event.key === 'Escape') {
+      cancelEdit();
     }
   }
 
@@ -181,7 +232,26 @@
               <div class="item-name-display" title={getItemDisplayName(itemName)}>
                 {getItemDisplayName(itemName)}
               </div>
-              <div class="item-count-display">×{count}</div>
+              {#if editingItem === itemName}
+                <div class="count-edit-wrapper" on:click|stopPropagation>
+                  <input 
+                    type="number" 
+                    class="count-edit-input"
+                    bind:value={editValue}
+                    on:blur={() => saveEditedCount(itemName, count)}
+                    on:keydown={(e) => handleEditKeydown(e, itemName, count)}
+                    min="0"
+                  />
+                </div>
+              {:else}
+                <div 
+                  class="item-count-display editable" 
+                  on:click={(e) => startEditingCount(itemName, count, e)}
+                  title="Click to edit count"
+                >
+                  ×{count}
+                </div>
+              {/if}
               <div class="expand-indicator" class:rotated={expandedItems.has(itemName)}>
                 ▼
               </div>
@@ -368,6 +438,41 @@
     box-shadow: 0 2px 8px hsl(var(--wa) / 0.3);
     flex-shrink: 0;
     margin-right: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .item-count-display.editable {
+    cursor: pointer;
+  }
+
+  .item-count-display.editable:hover {
+    background: linear-gradient(135deg, hsl(var(--p)), hsl(var(--p) / 0.8));
+    transform: scale(1.05);
+    box-shadow: 0 3px 12px hsl(var(--p) / 0.4);
+  }
+
+  .count-edit-wrapper {
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+
+  .count-edit-input {
+    width: 60px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 2px solid hsl(var(--p));
+    background: hsl(var(--b1));
+    color: hsl(var(--bc));
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    box-shadow: 0 0 0 3px hsl(var(--p) / 0.2);
+  }
+
+  .count-edit-input:focus {
+    border-color: hsl(var(--p));
+    box-shadow: 0 0 0 4px hsl(var(--p) / 0.3);
   }
 
   .expand-indicator {

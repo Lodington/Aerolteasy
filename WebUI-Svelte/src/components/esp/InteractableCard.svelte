@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="card bg-base-200 shadow-md hover:shadow-lg transition-all {interactable.IsAvailable ? 'border-2 border-success' : interactable.IsActivated ? 'border-2 border-neutral opacity-70' : ''}">
+<div class="card bg-base-100 shadow-md hover:shadow-lg transition-all {interactable.IsAvailable ? 'border-2 border-success' : interactable.IsActivated ? 'border-2 border-neutral opacity-70' : ''}">
   <div class="card-body p-4">
     <div class="flex justify-between items-start mb-3">
       <div class="flex-1">

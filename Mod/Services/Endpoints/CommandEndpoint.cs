@@ -24,14 +24,16 @@ namespace RoR2DevTool.Services.Endpoints
     {
         private readonly NetworkingService networkingService;
         private readonly PermissionService permissionService;
+        private readonly CommandProcessor commandProcessor;
         private readonly ManualLogSource logger;
 
         public string Path => "/api/command";
 
-        public CommandEndpoint(NetworkingService networkingService, PermissionService permissionService, ManualLogSource logger)
+        public CommandEndpoint(NetworkingService networkingService, PermissionService permissionService, CommandProcessor commandProcessor, ManualLogSource logger)
         {
             this.networkingService = networkingService;
             this.permissionService = permissionService;
+            this.commandProcessor = commandProcessor;
             this.logger = logger;
         }
 
@@ -163,53 +165,68 @@ namespace RoR2DevTool.Services.Endpoints
 
         private List<CommandInfo> GetAvailableCommands()
         {
-            // Define all available commands with their metadata
-            return new List<CommandInfo>
+            // Dynamically get all registered commands from CommandProcessor
+            var registeredCommands = commandProcessor.GetAllCommands();
+            var commandInfoList = new List<CommandInfo>();
+
+            foreach (var kvp in registeredCommands)
             {
-                // Player Commands
-                new CommandInfo { name = "godmode", category = "Player", permission = "Advanced", description = "Toggle god mode for a player" },
-                new CommandInfo { name = "changeplayer", category = "Player", permission = "Advanced", description = "Change player character" },
-                new CommandInfo { name = "sethealth", category = "Player", permission = "Basic", description = "Set player health percentage" },
-                new CommandInfo { name = "setlevel", category = "Player", permission = "Basic", description = "Set player level" },
-                new CommandInfo { name = "setplayerstats", category = "Player", permission = "Advanced", description = "Set player stats (damage, armor, etc.)" },
-                new CommandInfo { name = "killplayer", category = "Player", permission = "Admin", description = "Kill a player" },
-                new CommandInfo { name = "reviveplayer", category = "Player", permission = "Admin", description = "Revive a dead player" },
-                new CommandInfo { name = "teleportplayer", category = "Player", permission = "Advanced", description = "Teleport player to coordinates" },
+                var commandName = kvp.Key;
+                var command = kvp.Value;
                 
-                // Item Commands
-                new CommandInfo { name = "spawnitem", category = "Items", permission = "Basic", description = "Spawn items for a player" },
-                
-                // Game Commands
-                new CommandInfo { name = "setmoney", category = "Game", permission = "Basic", description = "Set team money" },
-                new CommandInfo { name = "changestage", category = "Game", permission = "Admin", description = "Change to a different stage" },
-                
-                // Monster Commands
-                new CommandInfo { name = "spawnmonster", category = "Monsters", permission = "Advanced", description = "Spawn a monster" },
-                new CommandInfo { name = "givemonsteritem", category = "Monsters", permission = "Advanced", description = "Give item to monsters" },
-                new CommandInfo { name = "givemonsterbuff", category = "Monsters", permission = "Advanced", description = "Give buff to monsters" },
-                
-                // Teleporter Commands
-                new CommandInfo { name = "chargeteleporter", category = "Teleporter", permission = "Admin", description = "Set teleporter charge" },
-                new CommandInfo { name = "activateteleporter", category = "Teleporter", permission = "Admin", description = "Activate the teleporter" },
-                new CommandInfo { name = "skipteleporterevent", category = "Teleporter", permission = "Admin", description = "Skip teleporter event" },
-                new CommandInfo { name = "spawnteleporter", category = "Teleporter", permission = "Admin", description = "Spawn a teleporter" },
-                
-                // ESP Commands
-                new CommandInfo { name = "toggleespoverlay", category = "ESP", permission = "Basic", description = "Toggle ESP overlay" },
-                new CommandInfo { name = "configureespoverlay", category = "ESP", permission = "Basic", description = "Configure ESP settings" },
-                new CommandInfo { name = "testespoverlay", category = "ESP", permission = "Basic", description = "Test ESP overlay" },
-                new CommandInfo { name = "disableespoverlay", category = "ESP", permission = "Basic", description = "Disable ESP overlay" },
-                
-                // Debug Commands
-                new CommandInfo { name = "refreshstate", category = "Debug", permission = "ReadOnly", description = "Refresh game state" },
-                new CommandInfo { name = "debugitems", category = "Debug", permission = "ReadOnly", description = "Log all items to console" },
-                new CommandInfo { name = "debuginteractables", category = "Debug", permission = "ReadOnly", description = "Log all interactables" },
-                new CommandInfo { name = "debugmonsters", category = "Debug", permission = "ReadOnly", description = "Log all monsters" },
-                new CommandInfo { name = "debugplayeritems", category = "Debug", permission = "ReadOnly", description = "Log player items" },
-                new CommandInfo { name = "debugcharactericons", category = "Debug", permission = "ReadOnly", description = "Log character icons" },
-                new CommandInfo { name = "debugitemcatalog", category = "Debug", permission = "ReadOnly", description = "Refresh item catalog" },
-                new CommandInfo { name = "debugcharacterdefaults", category = "Debug", permission = "ReadOnly", description = "Refresh character defaults" }
-            };
+                // Determine category and permission based on command type/namespace
+                string category = DetermineCategory(command);
+                string permission = DeterminePermission(commandName);
+                string description = $"{command.CommandName} command";
+
+                commandInfoList.Add(new CommandInfo
+                {
+                    name = commandName,
+                    category = category,
+                    permission = permission,
+                    description = description
+                });
+            }
+
+            return commandInfoList;
+        }
+
+        private string DetermineCategory(Commands.IDevCommand command)
+        {
+            var typeName = command.GetType().Namespace ?? "";
+            
+            if (typeName.Contains("PlayerCommands")) return "Player";
+            if (typeName.Contains("ItemCommands")) return "Items";
+            if (typeName.Contains("GameCommands")) return "Game";
+            if (typeName.Contains("MonsterCommands")) return "Monsters";
+            if (typeName.Contains("TeleporterCommands")) return "Teleporter";
+            if (typeName.Contains("SpawningCommands")) return "Spawning";
+            if (typeName.Contains("ESPCommands")) return "ESP";
+            if (typeName.Contains("DebugCommands")) return "Debug";
+            
+            return "Other";
+        }
+
+        private string DeterminePermission(string commandName)
+        {
+            // Admin commands
+            if (commandName.Contains("kill") || commandName.Contains("changestage") || 
+                commandName.Contains("teleporter") || commandName.Contains("revive"))
+                return "Admin";
+            
+            // Advanced commands
+            if (commandName.Contains("godmode") || commandName.Contains("changeplayer") || 
+                commandName.Contains("stats") || commandName.Contains("monster") || 
+                commandName.Contains("teleport"))
+                return "Advanced";
+            
+            // Debug/ReadOnly commands
+            if (commandName.Contains("debug") || commandName.Contains("refresh") || 
+                commandName.Contains("test") || commandName.Contains("mock") || commandName.Contains("clear"))
+                return "ReadOnly";
+            
+            // Everything else is Basic
+            return "Basic";
         }
 
         private void SendJsonResponse(HttpListenerResponse response, object data, int statusCode = 200)

@@ -43,9 +43,7 @@
       },
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
-      },
-      "fileDescription": "Risk of Rain 2 Development Tool",
-      "productName": "RoR2 DevTool"
+      }
     },
     "resources": [],
     "externalBin": [],

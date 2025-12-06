@@ -117,7 +117,7 @@
 </script>
 
 {#if selectedMonster}
-  <div class="card bg-base-100 shadow-lg">
+  <div class="card bg-base-200 shadow-lg">
     <div class="card-body">
       <h3 class="card-title text-lg mb-4">⚙️ Spawn Settings</h3>
 

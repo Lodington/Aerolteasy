@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Logging;
 using RoR2DevTool.Commands;
-using RoR2DevTool.Commands.DebugCommands;
-using RoR2DevTool.Commands.GameCommands;
-using RoR2DevTool.Commands.ItemCommands;
-using RoR2DevTool.Commands.MonsterCommands;
-using RoR2DevTool.Commands.PlayerCommands;
-using RoR2DevTool.Commands.SpawningCommands;
-using RoR2DevTool.Commands.TeleporterCommands;
 using RoR2DevTool.Commands.ESPCommands;
 using RoR2DevTool.Core;
 
@@ -38,63 +32,25 @@ namespace RoR2DevTool.Services
 
         private void RegisterCommands()
         {
-            // Player Commands
-            RegisterCommand(new GodModeCommand());
-            RegisterCommand(new ChangePlayerCommand());
-            RegisterCommand(new SetHealthCommand());
-            RegisterCommand(new SetLevelCommand());
-            RegisterCommand(new KillPlayerCommand());
-            RegisterCommand(new RevivePlayerCommand());
-            RegisterCommand(new SetPlayerStatsCommand());
-            RegisterCommand(new TeleportPlayerCommand());
-            RegisterCommand(new TeleportToPlayerCommand());
-            RegisterCommand(new TeleportAllToCommand());
-            
-            // Item Commands
-            RegisterCommand(new SpawnItemCommand());
-            
-            // Game Commands
-            RegisterCommand(new ChangeStageCommand());
-            RegisterCommand(new SetMoneyCommand());
-            
-            // Spawning Commands
-            RegisterCommand(new SpawnMonsterCommand());
-            RegisterCommand(new SpawnInteractableCommand());
-            
-            // Monster Commands
-            RegisterCommand(new GiveMonsterItemCommand());
-            RegisterCommand(new GiveMonsterBuffCommand());
-            
-            // Teleporter Commands
-            RegisterCommand(new ChargeTeleporterCommand());
-            RegisterCommand(new ActivateTeleporterCommand());
-            RegisterCommand(new SkipTeleporterEventCommand());
-            RegisterCommand(new SpawnTeleporterCommand());
-            
-            // Debug Commands
-            RegisterCommand(new DebugPlayerItemsCommand());
-            RegisterCommand(new DebugItemsCommand());
-            RegisterCommand(new DebugInteractablesCommand());
-            RegisterCommand(new DebugCharacterIconsCommand());
-            RegisterCommand(new DebugMonstersCommand());
-            RegisterCommand(new DebugInteractableSpawnCardsCommand());
-            RegisterCommand(new DebugItemCatalogCommand());
-            RegisterCommand(new DebugCharacterDefaultsCommand());
-            RegisterCommand(new DebugESPDataCommand());
-            RegisterCommand(new TestESPDataCommand());
-            RegisterCommand(new TestESPOverlayCommand());
-            RegisterCommand(new DisableESPOverlayCommand());
-            RegisterCommand(new MockGameStateCommand());
-            RegisterCommand(new ClearMockDataCommand());
+            // Automatically discover and register all commands using reflection
+            var assembly = typeof(IDevCommand).Assembly;
+            var commandTypes = assembly.GetTypes()
+                .Where(t => typeof(IDevCommand).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 
-            // ESP Overlay Commands
-            RegisterCommand(new ToggleESPOverlayCommand());
-            RegisterCommand(new ConfigureESPOverlayCommand());
-
-            RegisterCommand(new RefreshStateCommand());
-            RegisterCommand(new SetVerboseLoggingCommand());
+            foreach (var commandType in commandTypes)
+            {
+                try
+                {
+                    var command = (IDevCommand)Activator.CreateInstance(commandType);
+                    RegisterCommand(command);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning($"Failed to register command {commandType.Name}: {ex.Message}");
+                }
+            }
             
-            logger.LogInfo($"Registered {commands.Count} commands");
+            logger.LogInfo($"Registered {commands.Count} commands automatically");
         }
 
         private void RegisterCommand(IDevCommand command)
@@ -144,6 +100,16 @@ namespace RoR2DevTool.Services
             {
                 logger.LogWarning($"Unknown command: {command.Type}");
             }
+        }
+
+        public Dictionary<string, IDevCommand> GetAllCommands()
+        {
+            return new Dictionary<string, IDevCommand>(commands);
+        }
+
+        public bool CommandExists(string commandName)
+        {
+            return commands.ContainsKey(commandName.ToLower());
         }
 
     }

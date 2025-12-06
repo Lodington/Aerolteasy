@@ -36,7 +36,7 @@ namespace RoR2DevTool
             permissionService = new PermissionService(Logger);
             networkingService = new NetworkingService(Logger, permissionService, commandProcessor);
             sseService = new SSEService(Logger, gameStateService, permissionService);
-            httpServer = new HttpServer(Logger, gameStateService, networkingService, permissionService, sseService);
+            httpServer = new HttpServer(Logger, gameStateService, networkingService, permissionService, sseService, commandProcessor);
             uiLauncherService = new UILauncherService(Logger);
             
             // Set ESP overlay service in command processor

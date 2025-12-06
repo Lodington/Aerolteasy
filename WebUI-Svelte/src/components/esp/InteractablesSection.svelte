@@ -12,7 +12,7 @@
 </script>
 
 {#if showInteractables}
-  <div class="card bg-base-100 shadow-lg">
+  <div class="card bg-base-200 shadow-lg">
     <div class="card-body">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h4 class="card-title text-lg">📦 Interactables</h4>

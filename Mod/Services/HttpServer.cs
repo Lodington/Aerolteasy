@@ -18,7 +18,7 @@ namespace RoR2DevTool.Services
         private Dictionary<string, IApiEndpoint> endpoints;
         private SSEService sseService;
 
-        public HttpServer(ManualLogSource logger, GameStateService gameStateService, NetworkingService networkingService, PermissionService permissionService, SSEService sseService)
+        public HttpServer(ManualLogSource logger, GameStateService gameStateService, NetworkingService networkingService, PermissionService permissionService, SSEService sseService, CommandProcessor commandProcessor)
         {
             this.logger = logger;
             this.sseService = sseService;
@@ -27,7 +27,7 @@ namespace RoR2DevTool.Services
             endpoints = new Dictionary<string, IApiEndpoint>(StringComparer.OrdinalIgnoreCase)
             {
                 { "/api/gamestate", new GameStateEndpoint(gameStateService, logger) },
-                { "/api/command", new CommandEndpoint(networkingService, permissionService, logger) },
+                { "/api/command", new CommandEndpoint(networkingService, permissionService, commandProcessor, logger) },
                 { "/api/status", new StatusEndpoint(logger) },
                 { "/api/itemcatalog", new ItemCatalogEndpoint(gameStateService, logger) },
                 { "/api/characterdefaults", new CharacterDefaultsEndpoint(gameStateService, logger) },

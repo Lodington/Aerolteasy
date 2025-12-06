@@ -19,7 +19,7 @@
   }
 </script>
 
-<div class="card bg-base-200 shadow-md hover:shadow-lg transition-all {monster.IsElite ? 'border-2 border-warning' : ''}">
+<div class="card bg-base-100 shadow-md hover:shadow-lg transition-all {monster.IsElite ? 'border-2 border-warning' : ''}">
   <div class="card-body p-4">
     <div class="flex justify-between items-start mb-3">
       <div class="flex-1">

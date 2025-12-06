@@ -19,6 +19,7 @@
   import BasicControls from "./player/BasicControls.svelte";
   import AdvancedStats from "./player/AdvancedStats.svelte";
   import PlayerActions from "./player/PlayerActions.svelte";
+  import CurrencyEditor from "./player/CurrencyEditor.svelte";
   import ItemManagement from "./player/ItemManagement.svelte";
 
   // UI State
@@ -465,12 +466,11 @@
     </div>
 
     <!-- Player Actions -->
-    <div class="card bg-base-200 shadow-lg">
-      <div class="card-body">
-        <h2 class="card-title">⚡ Quick Actions</h2>
-        <PlayerActions {refreshGameState} />
-      </div>
-    </div>
+    <PlayerActions {refreshGameState} />
+    
+
+    <!-- Currency Editor -->
+    <CurrencyEditor {refreshGameState} />
 
     <!-- Main Content Tabs -->
     <div class="card bg-base-200 shadow-lg">

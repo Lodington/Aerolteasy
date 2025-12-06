@@ -19,15 +19,31 @@ namespace RoR2DevTool.Commands.GameCommands
 
         private void SetMoney(uint amount, int playerId, ManualLogSource logger)
         {
-            var networkUser = GetNetworkUserById(playerId);
-            if (networkUser?.master != null)
+            if (playerId == -1)
             {
-                networkUser.master.money += amount;
-                logger.LogInfo($"Added {amount} money to player {playerId}");
+                // Set money for all players
+                foreach (var networkUser in RoR2.NetworkUser.readOnlyInstancesList)
+                {
+                    if (networkUser?.master != null)
+                    {
+                        networkUser.master.money = amount;
+                    }
+                }
+                logger.LogInfo($"Set money to {amount} for all players");
             }
             else
             {
-                logger.LogWarning($"Player {playerId} not found");
+                // Set money for specific player
+                var networkUser = GetNetworkUserById(playerId);
+                if (networkUser?.master != null)
+                {
+                    networkUser.master.money = amount;
+                    logger.LogInfo($"Set money to {amount} for player {playerId}");
+                }
+                else
+                {
+                    logger.LogWarning($"Player {playerId} not found");
+                }
             }
         }
     }

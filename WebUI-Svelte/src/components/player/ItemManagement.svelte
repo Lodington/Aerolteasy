@@ -82,6 +82,24 @@
     }
   }
 
+  async function dropItem(itemName, count = 1) {
+    if (!$selectedPlayer) return;
+    
+    try {
+      await api.sendCommand({
+        type: 'dropitem',
+        data: {
+          itemName: itemName,
+          count: count,
+          playerId: $selectedPlayer.PlayerId
+        }
+      });
+      console.log(`Dropped ${count} ${itemName}`);
+    } catch (error) {
+      console.error('Failed to drop item:', error);
+    }
+  }
+
   function startEditingCount(itemName, currentCount, event) {
     event.stopPropagation();
     editingItem = itemName;
@@ -268,9 +286,17 @@
                     <span>+</span>
                   </button>
                 </div>
-                <button class="control-btn remove-all" on:click|stopPropagation={() => removeItem(itemName)} title="Remove all">
-                  Remove All
-                </button>
+                <div class="action-buttons">
+                  <button class="control-btn drop-item" on:click|stopPropagation={() => dropItem(itemName, 1)} title="Drop 1 item in front of player">
+                    📦 Drop 1
+                  </button>
+                  <button class="control-btn drop-all" on:click|stopPropagation={() => dropItem(itemName, count)} title="Drop all items in front of player">
+                    📦 Drop All
+                  </button>
+                  <button class="control-btn remove-all" on:click|stopPropagation={() => removeItem(itemName)} title="Remove all">
+                    🗑️ Remove
+                  </button>
+                </div>
               </div>
             {/if}
             </div>
@@ -559,7 +585,45 @@
     text-align: center;
   }
 
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .control-btn.drop-item {
+    flex: 1;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, hsl(var(--in) / 0.1), hsl(var(--in) / 0.05));
+    color: hsl(var(--in));
+    border: 2px solid hsl(var(--in) / 0.3);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .control-btn.drop-item:hover {
+    background: linear-gradient(135deg, hsl(var(--in) / 0.2), hsl(var(--in) / 0.1));
+    border-color: hsl(var(--in));
+    transform: translateY(-2px);
+  }
+
+  .control-btn.drop-all {
+    flex: 1;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, hsl(var(--p) / 0.1), hsl(var(--p) / 0.05));
+    color: hsl(var(--p));
+    border: 2px solid hsl(var(--p) / 0.3);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .control-btn.drop-all:hover {
+    background: linear-gradient(135deg, hsl(var(--p) / 0.2), hsl(var(--p) / 0.1));
+    border-color: hsl(var(--p));
+    transform: translateY(-2px);
+  }
+
   .control-btn.remove-all {
+    flex: 1;
     padding: 8px 16px;
     background: linear-gradient(135deg, hsl(var(--er) / 0.1), hsl(var(--er) / 0.05));
     color: hsl(var(--er));

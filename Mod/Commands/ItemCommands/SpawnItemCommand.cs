@@ -2,8 +2,10 @@ using System;
 using BepInEx.Logging;
 using RoR2;
 using RoR2DevTool.Core;
+using RoR2DevTool.Networking.Messages;
 using RoR2DevTool.Services;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RoR2DevTool.Commands.ItemCommands
 {
@@ -60,53 +62,32 @@ namespace RoR2DevTool.Commands.ItemCommands
                     return;
                 }
             }
-            
-            // Handle negative counts (item removal)
-            if (count < 0)
+
+            // Use networked message to ensure all clients see the change
+            if (NetworkServer.active || NetworkClient.active)
             {
-                int currentCount = targetInventory.GetItemCount(itemIndex);
-                int removeCount = Mathf.Min(currentCount, -count);
-                if (removeCount > 0)
-                {
-                    targetInventory.RemoveItem(itemIndex, removeCount);
-                    logger.LogInfo($"Removed {removeCount} {itemName} from player {playerId}");
-                }
-                else
-                {
-                    logger.LogWarning($"Cannot remove {-count} {itemName}, player only has {currentCount}");
-                }
+                var message = new SpawnItemMessage(targetInventory, itemIndex, count);
+                message.SendToEveryone();
+                logger.LogInfo($"Sent networked spawn item message: {count} {itemName} to player {playerId}");
             }
-            else if (count > 0)
+            else
             {
-                targetInventory.GiveItem(itemIndex, count);
-                logger.LogInfo($"Gave {count} {itemName} to player {playerId}");
-            }
-            
-            // Force inventory synchronization
-            try
-            {
-                CharacterMaster master = null;
-                
-                if (playerId == -1)
+                // Fallback for offline/single player
+                if (count < 0)
                 {
-                    var localUser = LocalUserManager.GetFirstLocalUser();
-                    master = localUser?.cachedMaster;
+                    int currentCount = targetInventory.GetItemCount(itemIndex);
+                    int removeCount = Mathf.Min(currentCount, -count);
+                    if (removeCount > 0)
+                    {
+                        targetInventory.RemoveItem(itemIndex, removeCount);
+                        logger.LogInfo($"Removed {removeCount} {itemName} from player {playerId}");
+                    }
                 }
-                else
+                else if (count > 0)
                 {
-                    var networkUser = GetNetworkUserById(playerId);
-                    master = networkUser?.master;
+                    targetInventory.GiveItem(itemIndex, count);
+                    logger.LogInfo($"Gave {count} {itemName} to player {playerId}");
                 }
-                
-                if (master != null)
-                {
-                    master.inventory.SetDirtyBit(1U);
-                    logger.LogDebug("Forced inventory sync");
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning($"Failed to sync inventory: {ex.Message}");
             }
         }
     }
